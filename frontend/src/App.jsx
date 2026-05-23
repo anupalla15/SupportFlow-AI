@@ -72,7 +72,6 @@ function Avatar({ from }) {
   );
 }
 
-// Escalation warning banner shown inside the chat
 function EscalationBanner({ ticketId, sentiment, priority }) {
   const cfg = SENTIMENT_CONFIG[sentiment] || SENTIMENT_CONFIG.neutral;
   return (
@@ -98,8 +97,8 @@ function EscalationBanner({ ticketId, sentiment, priority }) {
   );
 }
 
-// Ticket metadata pill shown under each bot message
-function TicketPill({ ticket }) {
+// ── CHANGE 1: added ragUsed prop and 📚 KB badge ──────────────────────────
+function TicketPill({ ticket, ragUsed }) {
   const cfg = SENTIMENT_CONFIG[ticket.sentiment] || SENTIMENT_CONFIG.neutral;
   return (
     <div className="flex items-center gap-2 mt-1.5 ml-1 flex-wrap">
@@ -111,10 +110,17 @@ function TicketPill({ ticket }) {
       <span className={`text-[10px] px-2 py-0.5 rounded-full ${PRIORITY_BADGE[ticket.priority]}`}>
         {ticket.priority}
       </span>
+      {/* KB badge — only shows when FAQ context was used */}
+      {ragUsed && (
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-900 text-indigo-300 border border-indigo-700">
+          📚 KB
+        </span>
+      )}
     </div>
   );
 }
 
+// ── CHANGE 3: pass ragUsed into TicketPill ────────────────────────────────
 function ChatMessage({ msg }) {
   const isUser = msg.from === "user";
   return (
@@ -133,14 +139,15 @@ function ChatMessage({ msg }) {
             {msg.time}
           </div>
         </div>
-        {/* Ticket pill shown under bot messages only */}
-        {!isUser && msg.ticket && <TicketPill ticket={msg.ticket} />}
+        {!isUser && msg.ticket && (
+          <TicketPill ticket={msg.ticket} ragUsed={msg.ragUsed} />
+        )}
       </div>
     </div>
   );
 }
 
-// ── Sidebar: live ticket log ───────────────────────────────────────────────
+// ── Sidebar ticket log ─────────────────────────────────────────────────────
 
 function TicketLog({ tickets }) {
   if (tickets.length === 0) return (
@@ -157,7 +164,14 @@ function TicketLog({ tickets }) {
           <div key={t.ticket_id} className="bg-slate-800 border border-slate-700 rounded-xl p-3">
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs font-mono text-indigo-400">{t.ticket_id}</span>
-              {t.escalate && <span className="text-[10px] text-red-400 font-semibold">ESCALATED</span>}
+              <div className="flex items-center gap-1.5">
+                {t.ragUsed && (
+                  <span className="text-[10px] text-indigo-400">📚</span>
+                )}
+                {t.escalate && (
+                  <span className="text-[10px] text-red-400 font-semibold">ESCALATED</span>
+                )}
+              </div>
             </div>
             <p className="text-xs text-slate-400 truncate mb-1.5">{t.message}</p>
             <div className="flex gap-1.5">
@@ -179,7 +193,7 @@ function TicketLog({ tickets }) {
 
 function formatHistory(messages) {
   return messages
-    .filter((m) => m.from !== "system")
+    .filter((m) => m.from !== "system" && m.from !== "escalation")
     .map((m) => ({
       role: m.from === "user" ? "user" : "assistant",
       content: m.text,
@@ -196,12 +210,13 @@ export default function App() {
       text: "Hi! I'm SupportFlow AI. How can I help you today?",
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       ticket: null,
+      ragUsed: false,
     },
   ]);
-  const [input, setInput]       = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState(null);
-  const [ticketLog, setTicketLog] = useState([]);
+  const [input, setInput]             = useState("");
+  const [loading, setLoading]         = useState(false);
+  const [error, setError]             = useState(null);
+  const [ticketLog, setTicketLog]     = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const bottomRef = useRef(null);
@@ -215,8 +230,8 @@ export default function App() {
     const text = input.trim();
     if (!text || loading) return;
 
-    const time   = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    const userMsg = { id: Date.now(), from: "user", text, time, ticket: null };
+    const time    = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const userMsg = { id: Date.now(), from: "user", text, time, ticket: null, ragUsed: false };
     const updated = [...messages, userMsg];
 
     setMessages(updated);
@@ -239,18 +254,19 @@ export default function App() {
         throw new Error(err.detail || `Server error ${res.status}`);
       }
 
-      const data = await res.json();  // { reply, model, status, ticket }
+      const data   = await res.json();
       const ticket = data.ticket;
 
+      // ── CHANGE 2: store ragUsed on botMsg ─────────────────────
       const botMsg = {
         id: Date.now() + 1,
         from: "bot",
         text: data.reply,
         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         ticket,
+        ragUsed: data.rag_used ?? false,
       };
 
-      // If negative sentiment → inject escalation banner before the bot reply
       const newMsgs = ticket?.escalate
         ? [
             ...updated,
@@ -261,10 +277,10 @@ export default function App() {
 
       setMessages(newMsgs);
 
-      // Add to sidebar ticket log
+      // Save ragUsed in ticket log too
       setTicketLog((prev) => [
         ...prev,
-        { ...ticket, message: text },
+        { ...ticket, message: text, ragUsed: data.rag_used ?? false },
       ]);
 
     } catch (err) {
@@ -289,13 +305,14 @@ export default function App() {
       text: "Hi! I'm SupportFlow AI. How can I help you today?",
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       ticket: null,
+      ragUsed: false,
     }]);
     setError(null);
   }
 
-  // Stats for header bar
   const escalated = ticketLog.filter((t) => t.escalate).length;
   const critical  = ticketLog.filter((t) => t.priority === "critical").length;
+  const kbUsed    = ticketLog.filter((t) => t.ragUsed).length;
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
@@ -309,15 +326,19 @@ export default function App() {
               <p className="text-slate-500 text-xs mt-0.5">{ticketLog.length} tickets this session</p>
             </div>
 
-            {/* Stats row */}
-            <div className="grid grid-cols-2 gap-2 px-4 py-3 border-b border-slate-800">
-              <div className="bg-slate-800 rounded-lg p-2.5 text-center">
+            {/* Stats row — now 3 cards */}
+            <div className="grid grid-cols-3 gap-2 px-4 py-3 border-b border-slate-800">
+              <div className="bg-slate-800 rounded-lg p-2 text-center">
                 <div className="text-red-400 font-bold text-lg">{escalated}</div>
                 <div className="text-slate-500 text-[10px]">Escalated</div>
               </div>
-              <div className="bg-slate-800 rounded-lg p-2.5 text-center">
+              <div className="bg-slate-800 rounded-lg p-2 text-center">
                 <div className="text-orange-400 font-bold text-lg">{critical}</div>
                 <div className="text-slate-500 text-[10px]">Critical</div>
+              </div>
+              <div className="bg-slate-800 rounded-lg p-2 text-center">
+                <div className="text-indigo-400 font-bold text-lg">{kbUsed}</div>
+                <div className="text-slate-500 text-[10px]">KB Used</div>
               </div>
             </div>
 
@@ -352,7 +373,7 @@ export default function App() {
               </div>
               <div>
                 <h1 className="text-white font-semibold text-sm leading-tight">SupportFlow AI</h1>
-                <p className="text-emerald-400 text-xs">Online · Sentiment-aware</p>
+                <p className="text-emerald-400 text-xs">Online · Sentiment-aware · RAG enabled</p>
               </div>
             </div>
             <button
@@ -382,8 +403,11 @@ export default function App() {
             {loading && (
               <div className="flex gap-3">
                 <Avatar from="bot" />
-                <div className="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-sm">
-                  <TypingDots />
+                <div className="flex flex-col gap-1">
+                  <div className="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-sm">
+                    <TypingDots />
+                  </div>
+                  <span className="text-[11px] text-slate-500 ml-1">SupportFlow AI is typing...</span>
                 </div>
               </div>
             )}
@@ -393,6 +417,7 @@ export default function App() {
                 <span className="text-red-400 mt-0.5">⚠</span>
                 <div>
                   <span className="font-medium">Connection error: </span>{error}
+                  <span className="text-red-400"> — Is your FastAPI server running on port 8000?</span>
                 </div>
               </div>
             )}
@@ -408,7 +433,7 @@ export default function App() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder='Try: "I am really angry, my order never arrived!"'
+                placeholder='Try: "What is your return policy?" or "I am angry, order never arrived!"'
                 rows={1}
                 disabled={loading}
                 className="flex-1 bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500
@@ -435,9 +460,10 @@ export default function App() {
               </button>
             </div>
             <p className="text-slate-600 text-[11px] text-center mt-2.5">
-              Enter to send · Sentiment detection active · Powered by SupportFlow AI
+              Enter to send · Sentiment detection · RAG knowledge base · Powered by SupportFlow AI
             </p>
           </div>
+
         </div>
       </div>
     </div>
