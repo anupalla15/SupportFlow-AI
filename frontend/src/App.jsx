@@ -287,6 +287,7 @@ export default function App() {
   const [error, setError]         = useState(null);
   const [ticketLog, setTicketLog] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [summaries, setSummaries] = useState([]);
 
   // Escalation trend: count per-message (last 10)
   const [trendPoints, setTrendPoints] = useState([0]);
@@ -359,6 +360,9 @@ export default function App() {
       }
 
       const data   = await res.json();
+      if (data.summary) {
+  setSummaries((prev) => [data.summary, ...prev]);
+}
       const ticket = data.ticket;
 
       const botMsg = {
@@ -442,18 +446,28 @@ export default function App() {
           </div>
         </div>
 
-        {/* Tab nav */}
-        <div className="px-6 pb-3 flex items-center gap-2">
-          <TabBtn active={tab === "chat"} onClick={() => setTab("chat")}>💬 Chat</TabBtn>
-          <TabBtn active={tab === "dashboard"} onClick={() => setTab("dashboard")}>
-            📊 Analytics
-            {analytics.total > 0 && (
-              <span className="ml-1.5 bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                {analytics.total}
-              </span>
-            )}
-          </TabBtn>
-        </div>
+    {/* Tab nav */}
+<div className="px-6 pb-3 flex items-center gap-2">
+  <TabBtn active={tab === "chat"} onClick={() => setTab("chat")}>
+    💬 Chat
+  </TabBtn>
+
+  <TabBtn active={tab === "dashboard"} onClick={() => setTab("dashboard")}>
+    📊 Analytics
+    {analytics.total > 0 && (
+      <span className="ml-1.5 bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+        {analytics.total}
+      </span>
+    )}
+  </TabBtn>
+
+  <TabBtn
+    active={tab === "summaries"}
+    onClick={() => setTab("summaries")}
+  >
+    📝 Summaries
+  </TabBtn>
+</div>
       </header>
 
       {/* ══ CHAT VIEW ════════════════════════════════════════════════ */}
@@ -529,7 +543,6 @@ export default function App() {
                 Clear
               </button>
             </div>
-
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
               {messages.map((msg) => {
@@ -539,7 +552,6 @@ export default function App() {
                 }
                 return <ChatMessage key={msg.id} msg={msg} />;
               })}
-
               {loading && (
                 <div className="flex gap-3">
                   <Avatar from="bot" />
@@ -601,7 +613,6 @@ export default function App() {
       {/* ══ DASHBOARD VIEW ═══════════════════════════════════════════ */}
       {tab === "dashboard" && (
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-
           {analytics.total === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center">
               <div className="text-4xl mb-3">📊</div>
@@ -695,6 +706,102 @@ export default function App() {
           )}
         </div>
       )}
+      {tab === "summaries" && (
+  <div className="flex-1 overflow-y-auto bg-slate-950 p-6">
+
+    <h1 className="text-2xl font-bold text-white mb-6">
+      📝 AI Conversation Summaries
+    </h1>
+
+    {summaries.length === 0 ? (
+      <div className="text-slate-500">
+        No conversation summaries yet.
+      </div>
+    ) : (
+      <div className="space-y-4">
+
+        {summaries.map((summary, index) => (
+          <div
+            key={index}
+            className="bg-slate-900 border border-slate-800 rounded-2xl p-5"
+          >
+
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-indigo-400 font-mono">
+                {summary.ticket_id}
+              </span>
+
+              <span className="px-3 py-1 rounded-full text-xs bg-red-900 text-red-300">
+                {summary.priority}
+              </span>
+            </div>
+
+            <div className="space-y-3">
+
+              <div>
+                <p className="text-slate-500 text-xs uppercase">
+                  Issue
+                </p>
+
+                <p className="text-white">
+                  {summary.issue}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+
+                <div>
+                  <p className="text-slate-500 text-xs uppercase">
+                    Category
+                  </p>
+
+                  <p className="text-slate-300">
+                    {summary.category}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-slate-500 text-xs uppercase">
+                    Sentiment
+                  </p>
+
+                  <p className="text-slate-300">
+                    {summary.sentiment}
+                  </p>
+                </div>
+
+              </div>
+
+              <div>
+                <p className="text-slate-500 text-xs uppercase">
+                  Action Taken
+                </p>
+
+                <p className="text-slate-300">
+                  {summary.action_taken}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-slate-500 text-xs uppercase">
+                  Resolution Status
+                </p>
+
+                <p className="text-emerald-400">
+                  {summary.resolution_status}
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+        ))}
+
+      </div>
+    )}
+
+  </div>
+)}
     </div>
   );
 }

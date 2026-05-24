@@ -6,15 +6,15 @@ from app.services.sentiment import (
     analyze_sentiment, get_priority, should_escalate, generate_ticket_id,
 )
 from app.services.rag_service import get_relevant_context
+from app.services.summary import generate_summary          # ← NEW
 
 router = APIRouter()
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "openai/gpt-3.5-turbo"
+MODEL          = MODEL = "openai/gpt-3.5-turbo"           # free model
 
 # ── Prompts ────────────────────────────────────────────────────────
 
-# Used when NO FAQ match found — general assistant mode
 BASE_SYSTEM_PROMPT = (
     "You are SupportFlow AI, a customer support assistant. "
     "Be concise, empathetic, and solution-focused. "
@@ -24,7 +24,6 @@ BASE_SYSTEM_PROMPT = (
     "NEVER invent policies, prices, timelines, or procedures that are not provided to you."
 )
 
-# Used when FAQ match found — strict grounding mode
 RAG_SYSTEM_PROMPT = (
     "You are SupportFlow AI, a customer support assistant. "
     "CRITICAL RULES — you MUST follow these without exception:\n"
@@ -67,6 +66,7 @@ class ChatResponse(BaseModel):
     status: str = "success"
     ticket: TicketMeta
     rag_used: bool = False
+    summary: dict = {}                                              # ← NEW
 
 # ── Endpoint ───────────────────────────────────────────────────────
 
@@ -119,7 +119,7 @@ async def chat(req: ChatRequest):
 
     payload = {"model": MODEL, "messages": messages}
 
-    # 4. Call OpenRouter
+    # 4. Call OpenRouter for main AI reply
     try:
         response = requests.post(
             OPENROUTER_URL,
@@ -144,11 +144,22 @@ async def chat(req: ChatRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-    # 5. Return reply + metadata
+    # 5. Generate conversation summary                             ← NEW
+    full_convo = [
+        {"role": msg.role, "content": msg.content}
+        for msg in req.history
+    ] + [
+        {"role": "user",      "content": req.message},
+        {"role": "assistant", "content": reply},
+    ]
+    summary = generate_summary(full_convo, ticket_id)
+
+    # 6. Return everything
     return ChatResponse(
         reply=reply,
         model=model_used,
         rag_used=rag_used,
+        summary=summary,                                            # ← NEW
         ticket=TicketMeta(
             ticket_id=ticket_id,
             sentiment=sentiment,
