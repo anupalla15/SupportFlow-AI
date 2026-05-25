@@ -143,16 +143,22 @@ Analytics Dashboard
 # Screenshots
 
 ## Chat Interface
-(Add screenshot here)
+![Chat](./screenshots/chat.png)
+
+---
 
 ## Analytics Dashboard
-(Add screenshot here)
+![Dashboard](./screenshots/dashboard.png)
+
+---
 
 ## AI Conversation Summaries
-(Add screenshot here)
+![Summary](./screenshots/summary.png)
+
+---
 
 ## Escalation Workflow
-(Add screenshot here)
+![Escalation](./screenshots/escalation.png)
 
 ---
 
