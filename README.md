@@ -1,84 +1,201 @@
 # SupportFlow AI
 
-## Autonomous AI-Powered Customer Support Platform
+## Autonomous AI-Powered Customer Support Intelligence Platform
 
-SupportFlow AI is a full-stack AI-powered customer support automation platform built for FlowZint AI Hackathon 2026.
+SupportFlow AI is an enterprise-grade AI-powered customer support intelligence platform built for FlowZint AI Hackathon 2026.
 
-It provides intelligent customer assistance using Large Language Models through a modern chatbot interface.
+It combines Retrieval-Augmented Generation (RAG), sentiment-aware escalation workflows, analytics dashboards, and AI conversation summaries to automate and improve customer support operations.
 
 ---
 
-## Core Features
+# Project Overview
+
+Modern customer support systems often struggle with:
+
+- Slow response times
+- Repetitive customer queries
+- Poor escalation workflows
+- Lack of sentiment awareness
+- Manual ticket handling
+
+SupportFlow AI solves these challenges using intelligent AI-powered workflows that automate support operations while improving customer experience.
+
+---
+
+# Core Features
 
 - AI-powered customer support chatbot
-- Real-time conversational assistance
-- OpenRouter LLM integration
+- Retrieval-Augmented Generation (RAG) knowledge system
+- Sentiment-aware escalation workflows
+- Automated ticket generation
+- AI conversation summaries
+- Real-time support analytics dashboard
+- Intelligent priority classification
+- Knowledge-base grounded responses
+- Live activity monitoring
+- Enterprise-grade dark dashboard UI
 - FastAPI backend architecture
 - React frontend chat interface
-- Conversation memory handling
-- Responsive modern UI
 
 ---
 
-## System Architecture
+# AI Capabilities
 
+- Retrieval-Augmented Generation (RAG)
+- Sentiment Analysis
+- Escalation Detection
+- Intelligent Ticket Classification
+- AI Conversation Summarization
+- Enterprise Support Analytics
+- Knowledge Base Grounding
+
+---
+
+# System Architecture
+
+User Query  
+↓  
 React Frontend  
 ↓  
 FastAPI Backend  
 ↓  
-OpenRouter API  
+RAG Knowledge Retrieval  
 ↓  
-LLM Response Engine
+Sentiment Analysis Engine  
+↓  
+Priority Classification  
+↓  
+AI Response Generation  
+↓  
+Conversation Summary Engine  
+↓  
+Analytics Dashboard
 
 ---
 
-## Tech Stack
+# Tech Stack
 
+## Frontend
 - React
 - Vite
 - Tailwind CSS
+
+## Backend
 - FastAPI
 - Python
+
+## AI & APIs
 - OpenRouter API
 - GPT-3.5 Turbo
 
 ---
 
-## Current Progress
+# Current Features Implemented
 
 - Frontend setup completed
 - Backend architecture completed
 - AI chat endpoint working
 - Frontend-backend integration completed
 - Working AI chatbot MVP completed
+- RAG knowledge retrieval implemented
+- Sentiment analysis implemented
+- Escalation workflow implemented
+- Ticket generation system implemented
+- Analytics dashboard implemented
+- AI conversation summaries implemented
+- Enterprise dashboard UI completed
 
 ---
 
-## Planned Enhancements
+# Analytics Features
 
-- Sentiment analysis
-- Smart ticket escalation
-- Customer issue prioritization
-- Analytics dashboard
-- Knowledge base integration
-- Multi-agent workflows
+- Sentiment distribution tracking
+- Escalation monitoring
+- Priority breakdown charts
+- Live activity feed
+- KB-assisted response tracking
+- AI auto-resolution metrics
 
 ---
 
-## Setup Instructions
+# Conversation Intelligence Features
 
-### Backend
+- AI-generated issue summaries
+- Category classification
+- Sentiment detection
+- Resolution status tracking
+- Action-taken analysis
+- Ticket lifecycle monitoring
+
+---
+
+# Planned Enhancements
+
+- Multi-agent workflow orchestration
+- Customer support automation pipelines
+- Advanced analytics visualizations
+- Admin management dashboard
+- Cloud deployment and monitoring
+- Voice-based support assistant
+
+---
+
+# Screenshots
+
+## Chat Interface
+(Add screenshot here)
+
+## Analytics Dashboard
+(Add screenshot here)
+
+## AI Conversation Summaries
+(Add screenshot here)
+
+## Escalation Workflow
+(Add screenshot here)
+
+---
+
+# Setup Instructions
+
+## Backend
 
 ```bash
 cd backend
 .\venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload --port 8000
+```
 
-### Frontend
+## Frontend
 
+```bash
 cd frontend
 npm install
 npm run dev
-Author
+```
+
+---
+
+# Future Vision
+
+SupportFlow AI aims to evolve into a complete enterprise AI support operations platform capable of:
+
+- Intelligent support automation
+- Autonomous ticket routing
+- AI-powered support analytics
+- Multi-agent orchestration
+- Customer experience optimization
+
+---
+
+# Author
 
 Poornima Palla
+
+---
+
+# Hackathon
+
+Built for:
+FlowZint AI Hackathon 2026
+```
