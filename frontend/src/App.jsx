@@ -12,10 +12,39 @@ const SENTIMENT_CONFIG = {
 };
 
 const PRIORITY_BADGE = {
+  
   critical: "bg-red-900 text-red-300 border border-red-700",
   high:     "bg-orange-900 text-orange-300 border border-orange-700",
   medium:   "bg-slate-700 text-slate-300 border border-slate-600",
   low:      "bg-emerald-900 text-emerald-300 border border-emerald-700",
+};
+const AGENT_COLORS = {
+
+  blue: {
+    bg: "bg-blue-950 border-blue-800",
+    text: "text-blue-400",
+  },
+
+  orange: {
+    bg: "bg-orange-950 border-orange-800",
+    text: "text-orange-400",
+  },
+
+  purple: {
+    bg: "bg-purple-950 border-purple-800",
+    text: "text-purple-400",
+  },
+
+  green: {
+    bg: "bg-emerald-950 border-emerald-800",
+    text: "text-emerald-400",
+  },
+
+  slate: {
+    bg: "bg-slate-800 border-slate-700",
+    text: "text-slate-400",
+  },
+
 };
 
 // ── Utility ────────────────────────────────────────────────────────────────
@@ -170,21 +199,55 @@ function ActivityItem({ item }) {
 }
 
 // ── Chat sub-components ────────────────────────────────────────────────────
-
 function TypingDots() {
   return (
     <div className="flex items-center gap-1 px-4 py-3">
       {[0, 1, 2].map((i) => (
-        <span key={i} className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce"
-          style={{ animationDelay: `${i * 0.15}s` }} />
+        <span
+          key={i}
+          className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce"
+          style={{ animationDelay: `${i * 0.15}s` }}
+        />
       ))}
+    </div>
+  );
+}
+
+function AgentBadge({ agentInfo }) {
+
+  if (!agentInfo?.agent) return null;
+
+  const colors =
+    AGENT_COLORS[agentInfo.color] || AGENT_COLORS.slate;
+
+  return (
+    <div
+      className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs mb-2 ${colors.bg}`}
+    >
+
+      <span className="text-base leading-none">
+        {agentInfo.emoji}
+      </span>
+
+      <div>
+        <span className={`font-semibold ${colors.text}`}>
+          {agentInfo.agent}
+        </span>
+
+        <span className="text-slate-500 ml-1.5">
+          · {agentInfo.department}
+        </span>
+      </div>
+
     </div>
   );
 }
 
 function Avatar({ from }) {
   return from === "user" ? (
-    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">U</div>
+    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+      U
+    </div>
   ) : (
     <div className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center shrink-0">
       <svg viewBox="0 0 24 24" className="w-4 h-4 text-indigo-400 fill-current">
@@ -195,38 +258,76 @@ function Avatar({ from }) {
 }
 
 function EscalationBanner({ ticketId, sentiment, priority }) {
-  const cfg = SENTIMENT_CONFIG[sentiment] || SENTIMENT_CONFIG.neutral;
+
+  const cfg =
+    SENTIMENT_CONFIG[sentiment] || SENTIMENT_CONFIG.neutral;
+
   return (
     <div className={`rounded-xl border px-4 py-3 text-sm ${cfg.bg} mx-1`}>
+
       <div className="flex items-center gap-2 mb-1.5">
         <span>⚠️</span>
-        <span className="font-semibold text-white">Escalation Required</span>
-        <span className={`ml-auto text-xs font-mono px-2 py-0.5 rounded-md ${PRIORITY_BADGE[priority]}`}>
+
+        <span className="font-semibold text-white">
+          Escalation Required
+        </span>
+
+        <span
+          className={`ml-auto text-xs font-mono px-2 py-0.5 rounded-md ${PRIORITY_BADGE[priority]}`}
+        >
           {priority.toUpperCase()}
         </span>
       </div>
-      <p className={`text-xs ${cfg.color} mb-1`}>Sentiment detected: <strong>{cfg.label}</strong></p>
-      <p className="text-xs text-slate-400">Flagged for human agent review.</p>
+
+      <p className={`text-xs ${cfg.color} mb-1`}>
+        Sentiment detected: <strong>{cfg.label}</strong>
+      </p>
+
+      <p className="text-xs text-slate-400">
+        Flagged for human agent review.
+      </p>
+
       <div className="mt-2 pt-2 border-t border-slate-700 flex items-center gap-2">
-        <span className="text-xs text-slate-500">Ticket ID:</span>
-        <span className="text-xs font-mono text-indigo-400 font-semibold">{ticketId}</span>
+        <span className="text-xs text-slate-500">
+          Ticket ID:
+        </span>
+
+        <span className="text-xs font-mono text-indigo-400 font-semibold">
+          {ticketId}
+        </span>
       </div>
     </div>
   );
 }
 
 function TicketPill({ ticket, ragUsed }) {
-  const cfg = SENTIMENT_CONFIG[ticket.sentiment] || SENTIMENT_CONFIG.neutral;
+
+  const cfg =
+    SENTIMENT_CONFIG[ticket.sentiment] || SENTIMENT_CONFIG.neutral;
+
   return (
     <div className="flex items-center gap-2 mt-1.5 ml-1 flex-wrap">
-      <span className="text-[10px] font-mono text-slate-600">{ticket.ticket_id}</span>
-      <span className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border ${cfg.bg} ${cfg.color}`}>
-        <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+
+      <span className="text-[10px] font-mono text-slate-600">
+        {ticket.ticket_id}
+      </span>
+
+      <span
+        className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border ${cfg.bg} ${cfg.color}`}
+      >
+        <span
+          className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`}
+        />
+
         {cfg.label}
       </span>
-      <span className={`text-[10px] px-2 py-0.5 rounded-full ${PRIORITY_BADGE[ticket.priority]}`}>
+
+      <span
+        className={`text-[10px] px-2 py-0.5 rounded-full ${PRIORITY_BADGE[ticket.priority]}`}
+      >
         {ticket.priority}
       </span>
+
       {ragUsed && (
         <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-900 text-indigo-300 border border-indigo-700">
           📚 KB
@@ -237,26 +338,52 @@ function TicketPill({ ticket, ragUsed }) {
 }
 
 function ChatMessage({ msg }) {
+
   const isUser = msg.from === "user";
+
   return (
     <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
+
       <Avatar from={msg.from} />
+
       <div className="flex flex-col max-w-[75%]">
-        <div className={`rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm
+
+        {!isUser && (
+          <AgentBadge agentInfo={msg.agentInfo} />
+        )}
+
+        <div
+          className={`rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm
           ${isUser
             ? "bg-indigo-600 text-white rounded-tr-sm"
-            : "bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-sm"}`}>
+            : "bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-sm"}`}
+        >
+
           {msg.text}
-          <div className={`text-[10px] mt-1.5 ${isUser ? "text-indigo-300 text-right" : "text-slate-500"}`}>
+
+          <div
+            className={`text-[10px] mt-1.5 ${
+              isUser
+                ? "text-indigo-300 text-right"
+                : "text-slate-500"
+            }`}
+          >
             {msg.time}
           </div>
+
         </div>
-        {!isUser && msg.ticket && <TicketPill ticket={msg.ticket} ragUsed={msg.ragUsed} />}
+
+        {!isUser && msg.ticket && (
+          <TicketPill
+            ticket={msg.ticket}
+            ragUsed={msg.ragUsed}
+          />
+        )}
+
       </div>
     </div>
   );
 }
-
 // ── Tab button ─────────────────────────────────────────────────────────────
 
 function TabBtn({ active, onClick, children }) {
@@ -371,6 +498,7 @@ export default function App() {
         time: now(),
         ticket,
         ragUsed: data.rag_used ?? false,
+        agentInfo: data.agent_info ?? null,
       };
 
       const newMsgs = ticket?.escalate

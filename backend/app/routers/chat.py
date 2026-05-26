@@ -6,7 +6,8 @@ from app.services.sentiment import (
     analyze_sentiment, get_priority, should_escalate, generate_ticket_id,
 )
 from app.services.rag_service import get_relevant_context
-from app.services.summary import generate_summary          # ← NEW
+from app.services.summary import generate_summary     # ← NEW
+from app.services.agent_router import route_to_agent
 
 router = APIRouter()
 
@@ -67,6 +68,8 @@ class ChatResponse(BaseModel):
     ticket: TicketMeta
     rag_used: bool = False
     summary: dict = {}                                              # ← NEW
+    agent_info: dict = {}
+
 
 # ── Endpoint ───────────────────────────────────────────────────────
 
@@ -78,21 +81,27 @@ async def chat(req: ChatRequest):
     priority  = get_priority(sentiment)
     escalate  = should_escalate(sentiment)
     ticket_id = generate_ticket_id()
+    agent = route_to_agent(req.message)
+    agent_prompt = agent["prompt"]
 
     # 2. RAG — strict grounding when FAQ match found
     context  = get_relevant_context(req.message)
     rag_used = bool(context)
 
     if rag_used:
-        system_prompt = (
-            f"{RAG_SYSTEM_PROMPT}\n\n"
-            "══ COMPANY KNOWLEDGE (use ONLY this — do not invent anything) ══\n"
-            f"{context}\n"
-            "══ END OF COMPANY KNOWLEDGE ══\n\n"
-            "Now answer the customer's question using ONLY the information above."
-        )
+     system_prompt = (
+        f"{agent_prompt}\n\n"
+        "CRITICAL RULES — you MUST follow these without exception:\n"
+        "1. The COMPANY KNOWLEDGE section below is the ONLY source of truth.\n"
+        "2. Answer ONLY using facts from the COMPANY KNOWLEDGE.\n"
+        "3. NEVER contradict or invent policies not present in the knowledge.\n\n"
+        "══ COMPANY KNOWLEDGE ══\n"
+        f"{context}\n"
+        "══ END OF COMPANY KNOWLEDGE ══\n\n"
+        "Answer the customer using ONLY the information above."
+    )
     else:
-        system_prompt = BASE_SYSTEM_PROMPT
+     system_prompt = agent_prompt
 
     # 3. Build messages for OpenRouter
     headers = {
@@ -154,16 +163,25 @@ async def chat(req: ChatRequest):
     ]
     summary = generate_summary(full_convo, ticket_id)
 
-    # 6. Return everything
+
+# 6. Return everything
     return ChatResponse(
-        reply=reply,
-        model=model_used,
-        rag_used=rag_used,
-        summary=summary,                                            # ← NEW
-        ticket=TicketMeta(
-            ticket_id=ticket_id,
-            sentiment=sentiment,
-            priority=priority,
-            escalate=escalate,
-        ),
-    )
+    reply=reply,
+    model=model_used,
+    rag_used=rag_used,
+    summary=summary,
+
+    agent_info={
+        "agent": agent["agent"],
+        "department": agent["department"],
+        "emoji": agent["emoji"],
+        "color": agent["color"],
+    },
+
+    ticket=TicketMeta(
+        ticket_id=ticket_id,
+        sentiment=sentiment,
+        priority=priority,
+        escalate=escalate,
+    ),
+)
