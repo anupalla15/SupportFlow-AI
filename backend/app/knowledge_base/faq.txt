@@ -1,36 +1,52 @@
-[RETURNS]
-Our return policy allows customers to return any item within 30 days of purchase.
-Items must be unused and in original packaging.
-To start a return, email support@company.com with your order number.
-Refunds are processed within 5-7 business days after we receive the item.
+[BILLING]
+SupportFlow AI (powered by FlowZint) offers three subscription plans: Starter ($29/mo), Growth ($99/mo), and Enterprise (custom pricing).
+AI credits are consumed per workflow execution, API call, and AI model query. Credit usage is shown in real-time on your dashboard.
+Billing cycles renew on the same date each month. Invoices are sent to the registered email 3 days before renewal.
+To upgrade or downgrade your plan, go to Settings > Billing > Change Plan. Changes take effect at the next billing cycle.
+Refunds are available within 7 days of initial subscription purchase. Usage-based credits are non-refundable once consumed.
+If your payment fails, the system retries for 3 days before suspending the account. Update your card under Settings > Billing > Payment Method.
+Enterprise plans include dedicated AI credit pools, priority support SLAs, and custom integrations. Contact sales@flowzint.in for a quote.
+Credit top-ups are available in blocks of 1000, 5000, and 10000 credits from the Billing dashboard.
 
-[SHIPPING]
-Standard shipping takes 5-7 business days.
-Express shipping takes 1-2 business days and costs $12.99.
-Free shipping is available on orders over $50.
-We ship to all 50 US states and 30 international countries.
-International orders may take 10-15 business days.
+[WORKFLOW]
+FlowZint workflows are built using a drag-and-drop visual builder with triggers, conditions, actions, and output nodes.
+Common trigger types include: Webhook, Schedule (cron), Form Submit, API Event, and Manual Run.
+If a workflow fails, check the Execution Log under Workflows > History for the exact error step and message.
+Workflow execution delays over 5 minutes are usually caused by rate limits on connected third-party APIs.
+To debug a stuck workflow: disable it, check the last execution log, fix the failing node, then re-enable.
+Webhook triggers require a valid HTTPS endpoint. HTTP endpoints are not supported for security reasons.
+Scheduled workflows use UTC time by default. Configure timezone offset in Workflow Settings > Schedule.
+Failed workflows do not auto-retry by default. Enable retry logic under Workflow Settings > Error Handling.
+Maximum workflow execution time is 5 minutes for Starter, 15 minutes for Growth, and unlimited for Enterprise.
 
-[ACCOUNT]
-To reset your password, click "Forgot Password" on the login page.
-Account email changes require verification from your old email address.
-To delete your account, contact support@company.com — processed within 48 hours.
-You can update billing information under Settings > Payment Methods.
+[ACCESS]
+To reset your password, click "Forgot Password" on the login page. A reset link is sent to your registered email within 2 minutes.
+Two-factor authentication (2FA) can be enabled under Settings > Security. Supported methods: Authenticator App and SMS.
+If you are locked out after 5 failed login attempts, your account is temporarily suspended for 30 minutes for security.
+SSO (Single Sign-On) is available on Growth and Enterprise plans. Supported providers: Google Workspace, Microsoft Azure AD, Okta.
+To invite team members, go to Settings > Team > Invite Members. Role options: Admin, Editor, Viewer, API-Only.
+Workspace onboarding includes: account setup, first workflow creation, API key generation, and dashboard configuration.
+If a team member cannot access a workspace, ensure they have accepted the invitation email and are assigned the correct role.
+New users on Enterprise plans are assigned a dedicated onboarding specialist within 24 hours of signup.
 
-[ORDERS]
-You can track your order using the link in your confirmation email.
-Orders can be cancelled within 2 hours of placement.
-If your order hasn't arrived after 10 days, contact support with your order number.
-We send order confirmation emails within 5 minutes of purchase.
+[API]
+Your FlowZint API key can be generated at Settings > Developer > API Keys. Each key has configurable permissions and expiry.
+API authentication uses Bearer token format: Authorization: Bearer YOUR_API_KEY in the request header.
+The base URL for all FlowZint API endpoints is: https://api.flowzint.in/v1/
+Common HTTP error codes: 401 (invalid/expired API key), 403 (insufficient permissions), 429 (rate limit exceeded), 500 (platform error).
+Rate limits: Starter plan allows 100 requests/minute. Growth allows 1000 requests/minute. Enterprise has custom limits.
+Webhook payloads are sent as JSON POST requests. Ensure your endpoint returns HTTP 200 within 5 seconds or the delivery is retried.
+The FlowZint SDK is available for: Python, Node.js, and Go. Install via: pip install flowzint-sdk or npm install @flowzint/sdk.
+OAuth 2.0 is supported for third-party application integrations. Use the /auth/oauth/authorize endpoint to initiate the flow.
 
-[PAYMENTS]
-We accept Visa, Mastercard, American Express, PayPal, and Apple Pay.
-All transactions are encrypted with SSL security.
-Payment issues? Contact your bank first, then reach us at support@company.com.
-We do not store full credit card numbers on our servers.
 
-[PRODUCT]
-All products come with a 1-year manufacturer warranty.
-Warranty claims require proof of purchase.
-We release new products every quarter — subscribe to our newsletter for updates.
-Custom orders are available for bulk purchases over 50 units.
+[ONBOARDING]
+FlowZint's official website is https://flowzint.in
+FlowZint offers SaaS systems, AI & Automation, Enterprise Systems, Web Infrastructure, and Mobile Platforms.
+For business enquiries contact via https://flowzint.in/fz/business.html
+For partnership opportunities visit https://flowzint.in/fz/partnership.html
+For career and internship opportunities visit https://flowzint.in/fz/internships.html
+New enterprise clients are assigned an onboarding specialist — contact https://flowzint.in/fz/contact.html
+FlowZint's AI & Automation services page: https://flowzint.in/fz/ai-automation.html
+FlowZint's SaaS Systems page: https://flowzint.in/fz/saas-systems.html
+FlowZint's Enterprise Systems page: https://flowzint.in/fz/enterprise-systems.html
