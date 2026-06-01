@@ -116,7 +116,9 @@ function DonutChart({ data }) {
 }
 
 function Sparkline({ values, color = "#6366f1" }) {
-  if (values.length < 2) return <div className="text-[11px] text-slate-600 text-center py-2">Not enough data yet</div>;
+  if (values.length < 2) return (
+    <div className="text-[11px] text-slate-600 text-center py-2">Not enough data yet</div>
+  );
   const w = 200, h = 40, pad = 4, max = Math.max(...values, 1);
   const pts = values.map((v, i) => {
     const x = pad + (i / (values.length - 1)) * (w - pad * 2);
@@ -125,7 +127,8 @@ function Sparkline({ values, color = "#6366f1" }) {
   }).join(" ");
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className="w-full" preserveAspectRatio="none">
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="2"
+        strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -164,13 +167,13 @@ function CriticalAlert({ alert, onDismiss }) {
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
-            <span className="text-red-400 font-bold text-sm">Escalation Alert</span>
+            <span className="text-red-400 font-bold text-sm">Operations Alert</span>
           </div>
           <button onClick={onDismiss} className="text-slate-600 hover:text-slate-300 text-lg leading-none">&times;</button>
         </div>
-        <p className="text-white text-sm font-medium mb-1">Human Agent Notified</p>
+        <p className="text-white text-sm font-medium mb-1">Enterprise Operations Team Notified</p>
         <p className="text-slate-400 text-xs mb-3 leading-relaxed">
-          Critical issue detected. A specialist has been notified and will contact you shortly.
+          A specialist has been assigned and will follow up shortly.
         </p>
         <div className="bg-red-950 border border-red-800 rounded-xl px-3 py-2.5 flex items-center justify-between">
           <div>
@@ -178,19 +181,20 @@ function CriticalAlert({ alert, onDismiss }) {
             <div className="text-white font-bold text-lg">#{alert.queue_position}</div>
           </div>
           <div className="text-right">
-            <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">Est. Wait</div>
+            <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">Est. Response</div>
             <div className="text-slate-300 text-sm font-medium">~{alert.queue_position * 3} min</div>
           </div>
         </div>
         <div className="mt-3 h-0.5 bg-slate-800 rounded-full overflow-hidden">
-          <div className="h-full bg-red-600 rounded-full" style={{ animation: "shrink 6s linear", width: "100%" }} />
+          <div className="h-full bg-red-600 rounded-full"
+            style={{ animation: "shrink 6s linear", width: "100%" }} />
         </div>
       </div>
     </div>
   );
 }
 
-// ── Summary card (admin only) ──────────────────────────────────────────────
+// ── Summary card (admin) ───────────────────────────────────────────────────
 
 function SummaryCard({ summary }) {
   const [expanded, setExpanded] = useState(false);
@@ -201,7 +205,9 @@ function SummaryCard({ summary }) {
     <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-600 transition-colors">
       <div className="px-5 py-4 flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 text-lg">{catIcon}</div>
+          <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 text-lg">
+            {catIcon}
+          </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <span className="text-xs font-mono text-indigo-400 font-semibold">{summary.ticket_id}</span>
@@ -213,7 +219,8 @@ function SummaryCard({ summary }) {
         </div>
         <button onClick={() => setExpanded(v => !v)}
           className="text-slate-500 hover:text-slate-300 transition-colors shrink-0 p-1 rounded-lg hover:bg-slate-800">
-          <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-current transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}>
+          <svg viewBox="0 0 24 24"
+            className={`w-4 h-4 fill-current transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}>
             <path d="M7 10l5 5 5-5z" />
           </svg>
         </button>
@@ -222,7 +229,9 @@ function SummaryCard({ summary }) {
         <span className={`flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border ${sentCfg.bg} ${sentCfg.color}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${sentCfg.dot}`} />{sentCfg.label}
         </span>
-        <span className={`text-[11px] px-2.5 py-1 rounded-full ${PRIORITY_BADGE[summary.priority]}`}>{capitalize(summary.priority)}</span>
+        <span className={`text-[11px] px-2.5 py-1 rounded-full ${PRIORITY_BADGE[summary.priority]}`}>
+          {capitalize(summary.priority)}
+        </span>
         <span className={`flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full border ${resCfg.bg} ${resCfg.color}`}>
           {resCfg.icon} {summary.resolution_status}
         </span>
@@ -264,14 +273,24 @@ function ActivityItem({ item }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <span className="text-xs font-mono text-indigo-400">{item.ticket_id}</span>
-          {item.critical  && <span className="text-[10px] bg-red-900 text-red-300 border border-red-700 px-1.5 py-0.5 rounded font-bold">CRITICAL</span>}
-          {item.escalate && !item.critical && <span className="text-[10px] bg-orange-900 text-orange-300 border border-orange-700 px-1.5 py-0.5 rounded">ESC</span>}
-          {item.ragUsed   && <span className="text-[10px] text-indigo-400">📚</span>}
+          {item.critical  && (
+            <span className="text-[10px] bg-red-900 text-red-300 border border-red-700 px-1.5 py-0.5 rounded font-bold">
+              CRITICAL
+            </span>
+          )}
+          {item.escalate && !item.critical && (
+            <span className="text-[10px] bg-orange-900 text-orange-300 border border-orange-700 px-1.5 py-0.5 rounded">
+              ESC
+            </span>
+          )}
+          {item.ragUsed && <span className="text-[10px] text-indigo-400">📚</span>}
         </div>
         <p className="text-xs text-slate-400 truncate">{item.message}</p>
         <span className="text-[10px] text-slate-600">{item.time}</span>
       </div>
-      <span className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${PRIORITY_BADGE[item.priority]}`}>{item.priority}</span>
+      <span className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${PRIORITY_BADGE[item.priority]}`}>
+        {item.priority}
+      </span>
     </div>
   );
 }
@@ -281,7 +300,9 @@ function ActivityItem({ item }) {
 function TypingDots() {
   return (
     <div className="flex items-end gap-3">
-      <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 text-sm">⚡</div>
+      <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 text-sm">
+        ⚡
+      </div>
       <div className="bg-slate-900 border border-slate-800 rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5">
         {[0,1,2].map(i => (
           <span key={i} className="w-1.5 h-1.5 rounded-full bg-slate-600 animate-bounce"
@@ -301,31 +322,35 @@ function AgentBadge({ agentInfo }) {
   );
 }
 
+// Soft escalation notice — enterprise wording
 function EscalationNotice() {
   return (
     <div className="max-w-[85%] mx-auto">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl px-5 py-3 flex items-center gap-3">
-        <div className="w-7 h-7 rounded-full bg-orange-950 border border-orange-800 flex items-center justify-center shrink-0">
-          <span className="text-xs">👋</span>
+      <div className="bg-slate-900/80 border border-slate-700/50 rounded-2xl px-5 py-3.5 flex items-center gap-3">
+        <div className="w-6 h-6 rounded-full bg-indigo-950 border border-indigo-800 flex items-center justify-center shrink-0 text-xs">
+          👤
         </div>
         <div>
-          <p className="text-slate-300 text-sm font-medium">Connecting you to a specialist</p>
-          <p className="text-slate-500 text-xs mt-0.5">A support agent has been notified and will follow up shortly.</p>
+          <p className="text-slate-200 text-sm font-medium">Enterprise Operations Team Notified</p>
+          <p className="text-slate-500 text-xs mt-0.5">A specialist will follow up on this shortly.</p>
         </div>
       </div>
     </div>
   );
 }
 
+// Soft critical notice
 function CriticalNotice({ queuePos }) {
   return (
     <div className="max-w-[85%] mx-auto">
-      <div className="bg-slate-900 border border-red-900/60 rounded-2xl px-5 py-3 flex items-center gap-3">
+      <div className="bg-slate-900/80 border border-red-900/40 rounded-2xl px-5 py-3.5 flex items-center gap-3">
         <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse shrink-0" />
         <div>
-          <p className="text-slate-300 text-sm font-medium">Priority case — specialist notified</p>
+          <p className="text-slate-200 text-sm font-medium">
+            Priority case — Enterprise Operations Team alerted
+          </p>
           <p className="text-slate-500 text-xs mt-0.5">
-            You're #{queuePos} in queue · estimated response within {queuePos * 3} minutes
+            Queue position #{queuePos} · estimated response in {queuePos * 3} minutes
           </p>
         </div>
       </div>
@@ -338,9 +363,13 @@ function ChatMessage({ msg }) {
   return (
     <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"} items-end`}>
       {isUser ? (
-        <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-[11px] font-bold shrink-0 mb-0.5">U</div>
+        <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-[11px] font-bold shrink-0 mb-0.5">
+          U
+        </div>
       ) : (
-        <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 mb-0.5 text-sm">⚡</div>
+        <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 mb-0.5 text-sm">
+          ⚡
+        </div>
       )}
       <div className={`flex flex-col gap-0.5 ${isUser ? "items-end" : "items-start"} max-w-[80%]`}>
         {!isUser && <AgentBadge agentInfo={msg.agentInfo} />}
@@ -372,7 +401,7 @@ export default function App() {
   const [tab, setTab]                         = useState("chat");
   const [messages, setMessages]               = useState([{
     id: 0, from: "bot", agentInfo: null,
-    text: "Hi! I'm SupportFlow AI — the official support assistant for FlowZint's enterprise platform.\n\nI can help with AI automation workflows, SaaS subscriptions, API integrations, platform access, and more.\n\nWhat can I help you with today?",
+    text: "\SupportFlow AI — enterprise operational support for FlowZint workflows, integrations, billing, and platform systems.Describe an issue or select a support scenario below.",
     time: now(),
   }]);
   const [input, setInput]                     = useState("");
@@ -402,12 +431,20 @@ export default function App() {
     const aiResolved = total ? Math.round(((total - escalated) / total) * 100) : 0;
 
     const sentimentCounts = { angry: 0, frustrated: 0, neutral: 0, positive: 0 };
-    ticketLog.forEach(t => { if (sentimentCounts[t.sentiment] !== undefined) sentimentCounts[t.sentiment]++; });
-    const sentimentBars = Object.entries(sentimentCounts).map(([k, v]) => ({ label: SENTIMENT_CONFIG[k].label, value: v, color: SENTIMENT_CONFIG[k].bar }));
-    const donutData     = Object.entries(sentimentCounts).map(([k, v]) => ({ label: SENTIMENT_CONFIG[k].label, value: v, color: SENTIMENT_CONFIG[k].bar }));
+    ticketLog.forEach(t => {
+      if (sentimentCounts[t.sentiment] !== undefined) sentimentCounts[t.sentiment]++;
+    });
+    const sentimentBars = Object.entries(sentimentCounts).map(([k, v]) => ({
+      label: SENTIMENT_CONFIG[k].label, value: v, color: SENTIMENT_CONFIG[k].bar,
+    }));
+    const donutData = Object.entries(sentimentCounts).map(([k, v]) => ({
+      label: SENTIMENT_CONFIG[k].label, value: v, color: SENTIMENT_CONFIG[k].bar,
+    }));
 
     const priorityCounts = { critical: 0, high: 0, medium: 0, low: 0 };
-    ticketLog.forEach(t => { if (priorityCounts[t.priority] !== undefined) priorityCounts[t.priority]++; });
+    ticketLog.forEach(t => {
+      if (priorityCounts[t.priority] !== undefined) priorityCounts[t.priority]++;
+    });
     const priorityBars = [
       { label: "Critical", value: priorityCounts.critical, color: "#f87171" },
       { label: "High",     value: priorityCounts.high,     color: "#fb923c" },
@@ -461,17 +498,22 @@ export default function App() {
       newMsgs.push(botMsg);
       setMessages(newMsgs);
 
-      setTicketLog(prev => [...prev, { ...ticket, message: text, time: t, ragUsed: data.rag_used ?? false }]);
-      if (data.summary?.issue) setSummaries(prev => [data.summary, ...prev]);
-
-      if (ticket?.critical) {
-        setCriticalAlert({ ticket_id: ticket.ticket_id, queue_position: ticket.queue_position });
-        setEscalationQueue(prev => [
-          { ...ticket, message: text, time: t, agent: data.agent_info?.agent ?? "Enterprise Support AI" },
+      // Only log real support tickets — skip greetings/casual static responses
+      if (data.model !== "static") {
+        setTicketLog(prev => [
           ...prev,
+          { ...ticket, message: text, time: t, ragUsed: data.rag_used ?? false },
         ]);
+        if (data.summary?.issue) setSummaries(prev => [data.summary, ...prev]);
+        if (ticket?.critical) {
+          setCriticalAlert({ ticket_id: ticket.ticket_id, queue_position: ticket.queue_position });
+          setEscalationQueue(prev => [
+            { ...ticket, message: text, time: t, agent: data.agent_info?.agent ?? "Enterprise Support AI" },
+            ...prev,
+          ]);
+        }
+        setTrendPoints(prev => [...prev, ticket?.escalate ? 1 : 0].slice(-12));
       }
-      setTrendPoints(prev => [...prev, ticket?.escalate ? 1 : 0].slice(-12));
 
     } catch (err) {
       setError(err.message || "Could not reach the backend.");
@@ -507,7 +549,9 @@ export default function App() {
       <header className="border-b border-slate-800 bg-slate-950">
         <div className="px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-900/50 text-lg">⚡</div>
+            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-900/50 text-lg">
+              ⚡
+            </div>
             <div>
               <h1 className="text-white font-bold text-base leading-tight">SupportFlow AI</h1>
               <p className="text-slate-500 text-[11px]">Enterprise Support · Powered by FlowZint</p>
@@ -548,15 +592,27 @@ export default function App() {
           <TabBtn active={tab === "chat"}      onClick={() => setTab("chat")}>💬 Support Chat</TabBtn>
           <TabBtn active={tab === "dashboard"} onClick={() => setTab("dashboard")}>
             📊 Analytics
-            {analytics.total > 0 && <span className="ml-1.5 bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{analytics.total}</span>}
+            {analytics.total > 0 && (
+              <span className="ml-1.5 bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                {analytics.total}
+              </span>
+            )}
           </TabBtn>
           <TabBtn active={tab === "summaries"} onClick={() => setTab("summaries")}>
             📋 Summaries
-            {summaries.length > 0 && <span className="ml-1.5 bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{summaries.length}</span>}
+            {summaries.length > 0 && (
+              <span className="ml-1.5 bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                {summaries.length}
+              </span>
+            )}
           </TabBtn>
           <TabBtn active={tab === "queue"} onClick={() => setTab("queue")}>
             🚨 Queue
-            {escalationQueue.length > 0 && <span className="ml-1.5 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">{escalationQueue.length}</span>}
+            {escalationQueue.length > 0 && (
+              <span className="ml-1.5 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">
+                {escalationQueue.length}
+              </span>
+            )}
           </TabBtn>
         </div>
       </header>
@@ -565,7 +621,7 @@ export default function App() {
       {tab === "chat" && (
         <div className="flex flex-1 flex-col overflow-hidden" style={{ height: "calc(100vh - 112px)" }}>
 
-          {/* ── Messages scroll area ── */}
+          {/* Messages scroll area */}
           <div className="flex-1 overflow-y-auto px-4 md:px-12 py-8 space-y-6">
             <div className="max-w-2xl mx-auto w-full space-y-6">
 
@@ -597,7 +653,9 @@ export default function App() {
                           bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3
                           hover:border-indigo-500/50 hover:text-slate-200 hover:bg-slate-800/60
                           transition-all duration-200 group">
-                        <span className="text-base mt-0.5 group-hover:scale-110 transition-transform">{q.icon}</span>
+                        <span className="text-base mt-0.5 group-hover:scale-110 transition-transform">
+                          {q.icon}
+                        </span>
                         <span className="leading-snug">{q.text}</span>
                       </button>
                     ))}
@@ -609,10 +667,26 @@ export default function App() {
             </div>
           </div>
 
-          {/* ── Input — outside scroll area, pinned to bottom ── */}
+          {/* Input — pinned to bottom */}
           <div className="border-t border-slate-800/60 bg-slate-950 px-4 md:px-8 py-5 shrink-0">
             <div className="max-w-2xl mx-auto">
-              <div className="relative flex items-end gap-3 bg-slate-900 border border-slate-700/60
+              <div className="flex flex-wrap gap-2 mb-3">
+               {[
+                "Workflow failed overnight",
+               "API integration timeout",
+                "Dashboard access denied",
+               "Subscription renewal failed",
+               ].map((item) => (
+             <button
+             key={item}
+             onClick={() => setInput(item)}
+              className="rounded-full bg-slate-800 hover:bg-slate-700 text-[11px] px-3 py-1.5 transition"
+                 >
+              {item}
+              </button>
+                 ))}
+              </div>
+              <div className="flex items-end gap-3 bg-slate-900 border border-slate-700/60
                 rounded-2xl px-4 py-3 focus-within:border-indigo-500/60 transition-colors duration-200">
                 <textarea ref={inputRef} value={input}
                   onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown}
@@ -627,14 +701,19 @@ export default function App() {
                     text-white rounded-xl flex items-center justify-center
                     transition-colors duration-200 shadow-lg shadow-indigo-900/30">
                   {loading
-                    ? <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="32" strokeDashoffset="12" /></svg>
-                    : <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current"><path d="M2 21L23 12 2 3v7l15 2-15 2v7z" /></svg>
+                    ? <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="32" strokeDashoffset="12" />
+                      </svg>
+                    : <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+                        <path d="M2 21L23 12 2 3v7l15 2-15 2v7z" />
+                      </svg>
                   }
                 </button>
               </div>
               <div className="flex items-center justify-between mt-2 px-1">
                 <span className="text-[11px] text-slate-700">⏎ Send · ⇧⏎ New line</span>
-                <button onClick={clearChat} className="text-[11px] text-slate-700 hover:text-slate-500 transition-colors">
+                <button onClick={clearChat}
+                  className="text-[11px] text-slate-700 hover:text-slate-500 transition-colors">
                   Clear conversation
                 </button>
               </div>
@@ -652,17 +731,22 @@ export default function App() {
               <div className="text-4xl mb-3">📊</div>
               <h3 className="text-white font-semibold mb-1">No data yet</h3>
               <p className="text-slate-500 text-sm">Send messages in Support Chat to populate analytics.</p>
-              <button onClick={() => setTab("chat")} className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors">Open Chat →</button>
+              <button onClick={() => setTab("chat")}
+                className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors">
+                Open Chat →
+              </button>
             </div>
           ) : (
             <>
               <div>
-                <h2 className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-3">Session Metrics</h2>
+                <h2 className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-3">
+                  Operations Center
+                </h2>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <StatCard label="Total Tickets"   value={analytics.total}            sub="This session"           accent="text-white"       icon="🎫" />
-                  <StatCard label="Critical Cases"  value={analytics.critical}         sub="Human queue triggered"  accent="text-red-400"     icon="🚨" />
+                  <StatCard label="Operational Incidents"   value={analytics.total}            sub="This session"           accent="text-white"       icon="🎫" />
+                  <StatCard label="Priority Investigations"  value={analytics.critical}         sub="Human queue triggered"  accent="text-red-400"     icon="🚨" />
                   <StatCard label="Escalation Rate" value={`${analytics.escRate}%`}    sub={`${analytics.escalated} escalated`} accent="text-orange-400" icon="⚡" />
-                  <StatCard label="AI Resolution"   value={`${analytics.aiResolved}%`} sub="Resolved by AI"         accent="text-emerald-400" icon="✅" />
+                  <StatCard label="AI Resolution Success"   value={`${analytics.aiResolved}%`} sub="Resolved by AI"         accent="text-emerald-400" icon="✅" />
                 </div>
               </div>
 
@@ -677,7 +761,7 @@ export default function App() {
                 </div>
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
                   <h3 className="text-white font-semibold text-sm mb-1">Escalation Trend</h3>
-                  <p className="text-slate-600 text-[11px] mb-4">Last {trendPoints.length} messages</p>
+                  <p className="text-slate-600 text-[11px] mb-4">Last {trendPoints.length} interactions</p>
                   <Sparkline values={trendPoints} color="#f87171" />
                   <div className="mt-3 flex items-center justify-between text-[11px]">
                     <span className="text-slate-500">Escalations over time</span>
@@ -692,17 +776,20 @@ export default function App() {
               </div>
 
               {escalationQueue.length > 0 && (
-                <div className="bg-slate-900 border border-red-900 rounded-2xl p-5">
+                <div className="bg-slate-900 border border-red-900/60 rounded-2xl p-5">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                       <h3 className="text-white font-semibold text-sm">Escalation Queue</h3>
-                      <span className="text-xs bg-red-900 text-red-300 border border-red-700 px-2 py-0.5 rounded-full">{escalationQueue.length} active</span>
+                      <span className="text-xs bg-red-900 text-red-300 border border-red-700 px-2 py-0.5 rounded-full">
+                        {escalationQueue.length} active
+                      </span>
                     </div>
                   </div>
                   <div className="space-y-2">
                     {escalationQueue.map((item, i) => (
-                      <div key={item.ticket_id} className="bg-red-950 border border-red-800 rounded-xl px-4 py-3 flex items-center gap-4">
+                      <div key={item.ticket_id}
+                        className="bg-red-950/60 border border-red-800/60 rounded-xl px-4 py-3 flex items-center gap-4">
                         <div className="w-8 h-8 rounded-full bg-red-900 border border-red-700 flex items-center justify-center shrink-0">
                           <span className="text-red-300 font-bold text-sm">#{i+1}</span>
                         </div>
@@ -722,7 +809,7 @@ export default function App() {
 
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-white font-semibold text-sm">Live Activity Feed</h3>
+                  <h3 className="text-white font-semibold text-sm">Operational Activity Stream</h3>
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
                     <span className="text-emerald-400 text-[11px]">Live</span>
@@ -737,7 +824,7 @@ export default function App() {
                 {[
                   { label: "KB Assisted",   value: analytics.kbUsed,                                         color: "text-indigo-400",  icon: "📚" },
                   { label: "Auto-Resolved", value: analytics.total - analytics.escalated,                    color: "text-emerald-400", icon: "🤖" },
-                  { label: "Critical",      value: analytics.critical,                                       color: "text-red-400",     icon: "🚨" },
+                  { label: "Priority Cases",      value: analytics.critical,                                       color: "text-red-400",     icon: "🚨" },
                   { label: "Positive",      value: ticketLog.filter(t => t.sentiment === "positive").length, color: "text-emerald-400", icon: "😊" },
                 ].map(s => (
                   <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-3">
@@ -762,15 +849,18 @@ export default function App() {
               <div className="text-4xl mb-3">📋</div>
               <h3 className="text-white font-semibold mb-1">No summaries yet</h3>
               <p className="text-slate-500 text-sm">AI summaries appear automatically after each support interaction.</p>
-              <button onClick={() => setTab("chat")} className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors">Start Chat →</button>
+              <button onClick={() => setTab("chat")}
+                className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors">
+                Start Chat →
+              </button>
             </div>
           ) : (
             <>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 {[
-                  { label: "Total",     value: summaries.length,                                                   color: "text-white",       icon: "📋" },
-                  { label: "Escalated", value: summaries.filter(s => s.resolution_status === "Escalated").length,  color: "text-red-400",     icon: "⚡" },
-                  { label: "Resolved",  value: summaries.filter(s => s.resolution_status === "Resolved").length,   color: "text-emerald-400", icon: "✅" },
+                  { label: "Total",     value: summaries.length,                                                    color: "text-white",       icon: "📋" },
+                  { label: "Escalated", value: summaries.filter(s => s.resolution_status === "Escalated").length,   color: "text-red-400",     icon: "⚡" },
+                  { label: "Resolved",  value: summaries.filter(s => s.resolution_status === "Resolved").length,    color: "text-emerald-400", icon: "✅" },
                   { label: "Pending",   value: summaries.filter(s => ["Pending","In Progress"].includes(s.resolution_status)).length, color: "text-yellow-400", icon: "⏳" },
                 ].map(s => (
                   <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-3">
@@ -802,7 +892,7 @@ export default function App() {
         <div className="flex-1 overflow-y-auto px-6 py-6">
           <div className="flex items-center gap-3 mb-6">
             <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-            <h2 className="text-white font-bold text-lg">Human Escalation Queue</h2>
+            <h2 className="text-white font-bold text-lg">Enterprise Operations Queue</h2>
             <span className="bg-red-900 text-red-300 border border-red-700 text-xs px-2.5 py-1 rounded-full font-medium">
               {escalationQueue.length} waiting
             </span>
@@ -817,7 +907,8 @@ export default function App() {
           ) : (
             <div className="space-y-3">
               {escalationQueue.map((item, i) => (
-                <div key={item.ticket_id} className="bg-slate-900 border border-red-800 rounded-2xl p-5 flex items-start gap-4">
+                <div key={item.ticket_id}
+                  className="bg-slate-900 border border-red-800/60 rounded-2xl p-5 flex items-start gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-red-950 border border-red-700 flex flex-col items-center justify-center shrink-0">
                     <span className="text-[10px] text-red-400 uppercase">Pos</span>
                     <span className="text-red-300 font-bold text-lg leading-none">#{i+1}</span>
@@ -825,7 +916,9 @@ export default function App() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className="text-sm font-mono text-indigo-400 font-semibold">{item.ticket_id}</span>
-                      <span className="text-[11px] bg-red-900 text-red-300 border border-red-700 px-2 py-0.5 rounded-full">CRITICAL</span>
+                      <span className="text-[11px] bg-red-900 text-red-300 border border-red-700 px-2 py-0.5 rounded-full">
+                        CRITICAL
+                      </span>
                       <span className="text-[11px] text-slate-500">{item.agent}</span>
                     </div>
                     <p className="text-sm text-slate-300 mb-3 truncate">{item.message}</p>
@@ -838,7 +931,9 @@ export default function App() {
                           </span>
                         );
                       })()}
-                      <span className={`text-[11px] px-2 py-0.5 rounded-full ${PRIORITY_BADGE[item.priority]}`}>{item.priority}</span>
+                      <span className={`text-[11px] px-2 py-0.5 rounded-full ${PRIORITY_BADGE[item.priority]}`}>
+                        {item.priority}
+                      </span>
                       <span className="text-[11px] text-slate-600">{item.time}</span>
                     </div>
                   </div>

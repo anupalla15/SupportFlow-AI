@@ -112,7 +112,7 @@ Analytics Dashboard
 - Sentiment distribution tracking
 - Escalation monitoring
 - Priority breakdown charts
-- Live activity feed
+- Operational Activity Stream
 - KB-assisted response tracking
 - AI auto-resolution metrics
 
