@@ -395,30 +395,200 @@ function TabBtn({ active, onClick, children }) {
   );
 }
 
-// ── Main App ───────────────────────────────────────────────────────────────
 
+// ── Login Screen ───────────────────────────────────────────────────────────
+
+function LoginScreen({ onLogin }) {
+  const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError]       = useState("");
+
+  function handleLogin(role) {
+    if (!email.trim() || !password.trim()) {
+      setError("Please enter your email and password.");
+      return;
+    }
+    setError("");
+    onLogin(role);
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+
+        {/* Logo */}
+        <div className="flex items-center gap-3 justify-center mb-8">
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-xl shadow-lg shadow-indigo-900/50">
+            ⚡
+          </div>
+          <div>
+            <h1 className="text-white font-bold text-lg leading-tight">SupportFlow AI</h1>
+            <p className="text-slate-500 text-[11px]">Powered by FlowZint</p>
+          </div>
+        </div>
+
+        {/* Card */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <h2 className="text-white font-semibold text-base mb-1">Sign in</h2>
+          <p className="text-slate-500 text-xs mb-6">Access the enterprise support platform</p>
+
+          <div className="space-y-3 mb-4">
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="Work email"
+              className="w-full bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500
+                rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500
+                focus:ring-1 focus:ring-indigo-500 transition-colors"
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="Password"
+              onKeyDown={e => e.key === "Enter" && handleLogin("user")}
+              className="w-full bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500
+                rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500
+                focus:ring-1 focus:ring-indigo-500 transition-colors"
+            />
+          </div>
+
+          {error && (
+            <p className="text-red-400 text-xs mb-4 px-1">{error}</p>
+          )}
+
+          <div className="space-y-2">
+            <button
+              onClick={() => handleLogin("user")}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium
+                text-sm rounded-xl py-3 transition-colors">
+              Login as User
+            </button>
+            <button
+              onClick={() => handleLogin("admin")}
+              className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700
+                text-slate-300 font-medium text-sm rounded-xl py-3 transition-colors">
+              Login as Admin
+            </button>
+          </div>
+        </div>
+
+        <p className="text-slate-700 text-[11px] text-center mt-4">
+          Demo credentials — any email and password accepted
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── Human Support Modal ────────────────────────────────────────────────────
+
+function HumanSupportModal({ onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.7)" }}>
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+            <h3 className="text-white font-semibold text-sm">Enterprise Support Team</h3>
+          </div>
+          <button onClick={onClose}
+            className="text-slate-500 hover:text-slate-300 text-xl leading-none transition-colors">
+            &times;
+          </button>
+        </div>
+
+        {/* Status notice */}
+        <div className="bg-indigo-950 border border-indigo-800 rounded-xl px-4 py-3 mb-4">
+          <p className="text-indigo-300 text-xs font-medium">✅ Enterprise support team notified.</p>
+          <p className="text-indigo-400 text-xs mt-0.5">Priority escalation initiated.</p>
+        </div>
+
+        {/* Contact details */}
+        <div className="space-y-3">
+          <a href="mailto:contact@flowzint.in"
+            className="flex items-center gap-3 bg-slate-800 hover:bg-slate-700 border border-slate-700
+              rounded-xl px-4 py-3 transition-colors group">
+            <span className="text-base">✉️</span>
+            <div>
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider">Email</p>
+              <p className="text-slate-200 text-sm group-hover:text-white transition-colors">
+                contact@flowzint.in
+              </p>
+            </div>
+          </a>
+
+          <a href="tel:+918884397315"
+            className="flex items-center gap-3 bg-slate-800 hover:bg-slate-700 border border-slate-700
+              rounded-xl px-4 py-3 transition-colors group">
+            <span className="text-base">📞</span>
+            <div>
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider">Phone</p>
+              <p className="text-slate-200 text-sm group-hover:text-white transition-colors">
+                +91 8884397315
+              </p>
+            </div>
+          </a>
+
+          <a href="https://flowzint.in/fz/contact.html" target="_blank" rel="noreferrer"
+            className="flex items-center gap-3 bg-slate-800 hover:bg-slate-700 border border-slate-700
+              rounded-xl px-4 py-3 transition-colors group">
+            <span className="text-base">🌐</span>
+            <div>
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider">Support Portal</p>
+              <p className="text-slate-200 text-sm group-hover:text-white transition-colors">
+                flowzint.in/fz/contact.html
+              </p>
+            </div>
+          </a>
+        </div>
+
+        <button onClick={onClose}
+          className="w-full mt-4 bg-slate-800 hover:bg-slate-700 border border-slate-700
+            text-slate-400 text-sm rounded-xl py-2.5 transition-colors">
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+// ── Main App ───────────────────────────────────────────────────────────────
 export default function App() {
-  const [tab, setTab]                         = useState("chat");
-  const [messages, setMessages]               = useState([{
-    id: 0, from: "bot", agentInfo: null,
-    text: "\SupportFlow AI — enterprise operational support for FlowZint workflows, integrations, billing, and platform systems.Describe an issue or select a support scenario below.",
-    time: now(),
-  }]);
-  const [input, setInput]                     = useState("");
-  const [loading, setLoading]                 = useState(false);
-  const [error, setError]                     = useState(null);
-  const [ticketLog, setTicketLog]             = useState([]);
-  const [summaries, setSummaries]             = useState([]);
-  const [trendPoints, setTrendPoints]         = useState([0]);
-  const [criticalAlert, setCriticalAlert]     = useState(null);
+
+  const [tab, setTab] = useState("chat");
+
+  // ── NEW ROLE STATES ─────────────────────────
+  const [role, setRole] = useState(null);
+  const [showHumanSupport, setShowHumanSupport] = useState(false);
+
+  // ── CHAT STATE ──────────────────────────────
+  const [messages, setMessages] = useState([
+    {
+      id: 0,
+      from: "bot",
+      agentInfo: null,
+      text:
+        "SupportFlow AI — enterprise operational support for FlowZint workflows, integrations, billing, and platform systems.\n\nDescribe an issue or select a support scenario below.",
+      time: now(),
+    },
+  ]);
+
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [ticketLog, setTicketLog] = useState([]);
+  const [summaries, setSummaries] = useState([]);
+  const [trendPoints, setTrendPoints] = useState([0]);
+
+  const [criticalAlert, setCriticalAlert] = useState(null);
   const [escalationQueue, setEscalationQueue] = useState([]);
 
   const bottomRef = useRef(null);
-  const inputRef  = useRef(null);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  const inputRef = useRef(null);
 
   // ── Analytics ──────────────────────────────────────────────────
 
@@ -537,13 +707,19 @@ export default function App() {
   }
 
   // ── Render ─────────────────────────────────────────────────────
-
+ 
+if (!role) {
+  return <LoginScreen onLogin={(r) => setRole(r)} />;
+}
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col">
 
       {criticalAlert && (
         <CriticalAlert alert={criticalAlert} onDismiss={() => setCriticalAlert(null)} />
       )}
+{showHumanSupport && (
+  <HumanSupportModal onClose={() => setShowHumanSupport(false)} />
+)}
 
       {/* ── Header ── */}
       <header className="border-b border-slate-800 bg-slate-950">
@@ -572,49 +748,86 @@ export default function App() {
               </span>
             ))}
           </div>
+<div className="flex items-center gap-3">
 
-          <div className="flex items-center gap-3">
-            {escalationQueue.length > 0 && (
-              <button onClick={() => setTab("queue")}
-                className="flex items-center gap-1.5 bg-red-950 border border-red-700 text-red-400 text-xs px-3 py-1.5 rounded-lg hover:bg-red-900 transition-colors">
-                <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                {escalationQueue.length} critical
-              </button>
-            )}
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="text-emerald-400 text-xs font-medium">Online</span>
-            </div>
-          </div>
-        </div>
+  {/* Human Support */}
+  <button
+    onClick={() => setShowHumanSupport(true)}
+    className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700
+      text-slate-300 text-xs px-3 py-1.5 rounded-lg transition-colors"
+  >
+    👤 Human Support
+  </button>
 
-        <div className="px-6 pb-3 flex items-center gap-2">
-          <TabBtn active={tab === "chat"}      onClick={() => setTab("chat")}>💬 Support Chat</TabBtn>
-          <TabBtn active={tab === "dashboard"} onClick={() => setTab("dashboard")}>
-            📊 Analytics
-            {analytics.total > 0 && (
-              <span className="ml-1.5 bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                {analytics.total}
-              </span>
-            )}
-          </TabBtn>
-          <TabBtn active={tab === "summaries"} onClick={() => setTab("summaries")}>
-            📋 Summaries
-            {summaries.length > 0 && (
-              <span className="ml-1.5 bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                {summaries.length}
-              </span>
-            )}
-          </TabBtn>
-          <TabBtn active={tab === "queue"} onClick={() => setTab("queue")}>
-            🚨 Queue
-            {escalationQueue.length > 0 && (
-              <span className="ml-1.5 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">
-                {escalationQueue.length}
-              </span>
-            )}
-          </TabBtn>
-        </div>
+  {/* Role Badge */}
+  <span
+    className={`text-[11px] px-2.5 py-1 rounded-full border font-medium
+      ${
+        role === "admin"
+          ? "bg-indigo-950 border-indigo-800 text-indigo-400"
+          : "bg-slate-800 border-slate-700 text-slate-400"
+      }`}
+  >
+    {role === "admin" ? "⚙ Admin" : "👤 User"}
+  </span>
+
+  {/* Sign Out */}
+  <button
+    onClick={() => setRole(null)}
+    className="text-slate-600 hover:text-slate-400 text-[11px] transition-colors"
+  >
+    Sign out
+  </button>
+
+  {/* Online */}
+  <div className="flex items-center gap-2">
+    <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+    <span className="text-emerald-400 text-xs font-medium">
+      Online
+    </span>
+  </div>
+
+</div>
+</div>
+
+<div className="px-6 pb-3 flex items-center gap-2">
+
+<TabBtn active={tab === "chat"} onClick={() => setTab("chat")}>
+  💬 Support Chat
+</TabBtn>
+
+{/* Admin only */}
+{role === "admin" && (
+  <>
+    <TabBtn active={tab === "dashboard"} onClick={() => setTab("dashboard")}>
+      📊 Analytics
+      {analytics.total > 0 && (
+        <span className="ml-1.5 bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+          {analytics.total}
+        </span>
+      )}
+    </TabBtn>
+
+    <TabBtn active={tab === "summaries"} onClick={() => setTab("summaries")}>
+      📋 Summaries
+      {summaries.length > 0 && (
+        <span className="ml-1.5 bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+          {summaries.length}
+        </span>
+      )}
+    </TabBtn>
+
+    <TabBtn active={tab === "queue"} onClick={() => setTab("queue")}>
+      🚨 Queue
+      {escalationQueue.length > 0 && (
+        <span className="ml-1.5 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">
+          {escalationQueue.length}
+        </span>
+      )}
+    </TabBtn>
+  </>
+)}
+</div>
       </header>
 
       {/* ══ CHAT TAB ═════════════════════════════════════════════ */}
