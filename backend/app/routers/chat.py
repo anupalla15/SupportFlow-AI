@@ -10,6 +10,7 @@ from app.services.rag_service import get_relevant_context
 from app.services.summary import generate_summary
 from app.services.agent_router import route_to_agent
 from app.services.intent_classifier import classify_intent, get_static_response  # ← NEW
+from app.services.llm_service import call_llm
 
 router = APIRouter()
 
@@ -17,44 +18,42 @@ OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 MODEL = "openai/gpt-3.5-turbo"
 
 # ── Prompts ────────────────────────────────────────────────────────
+BASE_SYSTEM_PROMPT = """You are SupportFlow AI — enterprise support system for FlowZint (https://flowzint.in).
 
-BASE_SYSTEM_PROMPT = """You are SupportFlow AI, the enterprise support assistant for FlowZint (https://flowzint.in) — a SaaS and AI automation platform.
+OUTPUT RULES:
+- Maximum 3 sentences. No exceptions.
+- Lead with a one-line diagnosis in operational language.
+- Follow with 2-3 specific action steps as bullets if needed.
+- Use technical vocabulary: execution, synchronization, credential, endpoint, token, pipeline, provisioning.
+- Never start with "I understand", "Great question", or "I'd be happy to".
+- Never write paragraphs. Use line breaks.
+- End with exactly one next step or escalation offer.
+- Telugu-English / Hindi-English queries: respond in the same language mix used.
+- Unknown issues: "That falls outside current documentation — contact https://flowzint.in/fz/contact.html"
+- NEVER invent policies or pricing.
 
-RESPONSE RULES — follow strictly:
-- Maximum 4 sentences for most replies. Use a short bullet list only when listing steps.
-- Start with the diagnosis or answer. Never start with "I understand" or "Great question".
-- Use operational language: execution, integration, configuration, synchronization, credentials, pipeline.
-- For Telugu-English messages, respond naturally in the same language mix.
-- If you don't know, say: "That's outside my current knowledge — contact FlowZint support at https://flowzint.in/fz/contact.html"
-- NEVER invent policies, pricing, or timelines.
-- End with one clear next step.
-
-RESPONSE FORMAT:
-Diagnosis in one line.
-
-Steps if needed:
-- Step one
-- Step two
-
-Next step or offer to escalate."""
+TONE EXAMPLES:
+✓ "Workflow execution failure detected at trigger layer. Verify webhook endpoint returns HTTP 200 within 5s. Check execution log for step-level error."
+✓ "API authentication rejected — likely expired token. Regenerate credentials at Settings > Developer > API Keys. Retry with Bearer format."
+✗ "I understand how frustrating this must be! Let me help you with that issue today..." """
 
 RAG_SYSTEM_PROMPT = """You are SupportFlow AI for FlowZint (https://flowzint.in).
 
-RULES:
-1. Use ONLY the COMPANY KNOWLEDGE below. Do not add or invent anything.
-2. Answer directly. No preamble.
-3. If not covered: "That specific detail isn't documented here — contact https://flowzint.in/fz/contact.html"
-4. Max 4 sentences or a short bullet list.
-5. Operational tone. No filler."""
+RULES — no exceptions:
+1. Answer ONLY from COMPANY KNOWLEDGE below. Zero invention.
+2. Maximum 3 sentences.
+3. Operational tone — no filler words.
+4. Not covered → "Contact https://flowzint.in/fz/contact.html"
 
+COMPANY KNOWLEDGE:
+{context}
+END KNOWLEDGE"""
 ESCALATION_PROMPT_SUFFIX = """
 
-ESCALATION: This user needs urgent assistance.
-- One sentence acknowledging the severity.
-- State that the Enterprise Operations Team has been notified.
-- Give their queue position.
-- Under 4 sentences total. Do not attempt to resolve the issue yourself."""
-
+ESCALATION ACTIVE:
+- One sentence only: acknowledge severity + confirm Enterprise Operations Team notified.
+- State queue position #{queue_position}.
+- Do not attempt resolution. Total response: 2 sentences maximum."""
 # ── Schemas ────────────────────────────────────────────────────────
 
 class Message(BaseModel):
@@ -168,23 +167,11 @@ async def chat(req: ChatRequest):
     payload = {"model": MODEL, "messages": messages}
 
     # 6. Call OpenRouter
+    # ── Call LLM (Groq → OpenRouter fallback) ─────────────────────
     try:
-        response = requests.post(
-            OPENROUTER_URL, headers=headers, json=payload, timeout=30
-        )
-        response.raise_for_status()
-        data       = response.json()
-        reply      = data["choices"][0]["message"]["content"]
-        model_used = data.get("model", MODEL)
-
-    except requests.exceptions.HTTPError:
-        raise HTTPException(status_code=response.status_code, detail=f"OpenRouter error: {response.text}")
-    except requests.exceptions.Timeout:
-        raise HTTPException(status_code=504, detail="Request timed out.")
-    except (KeyError, IndexError):
-        raise HTTPException(status_code=502, detail="Unexpected response format.")
+          reply, model_used = call_llm(messages)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+          raise HTTPException(status_code=500, detail=f"LLM error: {str(e)}")
 
     # 7. Summary
     full_convo = [{"role": m.role, "content": m.content} for m in req.history] + [

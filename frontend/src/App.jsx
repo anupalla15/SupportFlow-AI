@@ -47,6 +47,13 @@ const SUGGESTED = [
   { icon: "📊", text: "Webhook triggers firing inconsistently in production" },
 ];
 
+const QUICK_ACTIONS = [
+  { label: "⚡ Workflow Failure",  query: "My workflow stopped executing — no triggers firing" },
+  { label: "🔌 API Timeout",       query: "API calls timing out, getting 504 gateway errors"   },
+  { label: "💳 Billing Error",     query: "Payment failed and my subscription is now inactive" },
+  { label: "🔐 Access Denied",     query: "Team member getting access denied on the dashboard" },
+];
+
 // ── Utilities ──────────────────────────────────────────────────────────────
 
 function formatHistory(messages) {
@@ -384,12 +391,16 @@ function ChatMessage({ msg }) {
     </div>
   );
 }
-
 function TabBtn({ active, onClick, children }) {
   return (
-    <button onClick={onClick}
-      className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors
-        ${active ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"}`}>
+    <button
+      onClick={onClick}
+      className={`px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap shrink-0
+        ${active
+          ? "bg-indigo-600 text-white"
+          : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+        }`}
+    >
       {children}
     </button>
   );
@@ -397,11 +408,11 @@ function TabBtn({ active, onClick, children }) {
 
 
 // ── Login Screen ───────────────────────────────────────────────────────────
-
 function LoginScreen({ onLogin }) {
-  const [email, setEmail]       = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError]       = useState("");
+  const [email, setEmail]         = useState("");
+  const [password, setPassword]   = useState("");
+  const [error, setError]         = useState("");
+  const [loggingIn, setLoggingIn] = useState(false);
 
   function handleLogin(role) {
     if (!email.trim() || !password.trim()) {
@@ -409,74 +420,101 @@ function LoginScreen({ onLogin }) {
       return;
     }
     setError("");
-    onLogin(role);
+    setLoggingIn(true);
+    setTimeout(() => { setLoggingIn(false); onLogin(role); }, 500);
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
+      style={{ background: "radial-gradient(ellipse at 60% 10%, #1e1b4b 0%, #0f172a 45%, #020617 100%)" }}>
 
-        {/* Logo */}
-        <div className="flex items-center gap-3 justify-center mb-8">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-xl shadow-lg shadow-indigo-900/50">
+      {/* Grid overlay */}
+      <div className="absolute inset-0 pointer-events-none opacity-30"
+        style={{
+          backgroundImage: "linear-gradient(rgba(99,102,241,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.06) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+        }} />
+
+      {/* Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
+        style={{ background: "radial-gradient(ellipse, rgba(99,102,241,0.15) 0%, transparent 70%)" }} />
+
+      <div className="relative z-10 w-full max-w-sm">
+
+        {/* Brand */}
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center
+            text-2xl shadow-2xl shadow-indigo-900/60 mb-4">
             ⚡
           </div>
-          <div>
-            <h1 className="text-white font-bold text-lg leading-tight">SupportFlow AI</h1>
-            <p className="text-slate-500 text-[11px]">Powered by FlowZint</p>
-          </div>
+          <h1 className="text-white font-bold text-xl tracking-tight">SupportFlow AI</h1>
+          <p className="text-slate-500 text-xs mt-1 tracking-wide">
+            Enterprise Support Platform · Powered by FlowZint
+          </p>
         </div>
 
         {/* Card */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-          <h2 className="text-white font-semibold text-base mb-1">Sign in</h2>
-          <p className="text-slate-500 text-xs mb-6">Access the enterprise support platform</p>
+        <div className="rounded-2xl p-7 border border-white/[0.07]"
+          style={{
+            background: "rgba(15, 23, 42, 0.85)",
+            backdropFilter: "blur(24px)",
+            boxShadow: "0 32px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)",
+          }}>
 
-          <div className="space-y-3 mb-4">
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="Work email"
-              className="w-full bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500
-                rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500
-                focus:ring-1 focus:ring-indigo-500 transition-colors"
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="Password"
-              onKeyDown={e => e.key === "Enter" && handleLogin("user")}
-              className="w-full bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500
-                rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500
-                focus:ring-1 focus:ring-indigo-500 transition-colors"
-            />
+          <h2 className="text-white font-semibold text-base mb-0.5">Sign in</h2>
+          <p className="text-slate-500 text-xs mb-5">Access your enterprise workspace</p>
+
+          <div className="space-y-3 mb-5">
+            <div>
+              <label className="text-slate-500 text-[10px] uppercase tracking-widest block mb-1.5">
+                Work Email
+              </label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="you@company.com"
+                className="w-full bg-slate-800/70 border border-slate-700/80 text-slate-200
+                  placeholder-slate-600 rounded-xl px-4 py-2.5 text-sm focus:outline-none
+                  focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40
+                  transition-all duration-200" />
+            </div>
+            <div>
+              <label className="text-slate-500 text-[10px] uppercase tracking-widest block mb-1.5">
+                Password
+              </label>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                onKeyDown={e => e.key === "Enter" && handleLogin("user")}
+                className="w-full bg-slate-800/70 border border-slate-700/80 text-slate-200
+                  placeholder-slate-600 rounded-xl px-4 py-2.5 text-sm focus:outline-none
+                  focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40
+                  transition-all duration-200" />
+            </div>
           </div>
 
           {error && (
-            <p className="text-red-400 text-xs mb-4 px-1">{error}</p>
+            <div className="bg-red-950/50 border border-red-800/50 rounded-lg px-3 py-2 mb-4">
+              <p className="text-red-400 text-xs">{error}</p>
+            </div>
           )}
 
           <div className="space-y-2">
-            <button
-              onClick={() => handleLogin("user")}
-              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium
-                text-sm rounded-xl py-3 transition-colors">
-              Login as User
+            <button onClick={() => handleLogin("user")} disabled={loggingIn}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60
+                text-white font-medium text-sm rounded-xl py-2.5 transition-all duration-200
+                shadow-lg shadow-indigo-900/40 hover:shadow-indigo-900/60">
+              {loggingIn ? "Signing in…" : "Login as User"}
             </button>
-            <button
-              onClick={() => handleLogin("admin")}
-              className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700
-                text-slate-300 font-medium text-sm rounded-xl py-3 transition-colors">
+            <button onClick={() => handleLogin("admin")} disabled={loggingIn}
+              className="w-full bg-slate-800 hover:bg-slate-700 disabled:opacity-60
+                border border-slate-700 hover:border-slate-600
+                text-slate-300 font-medium text-sm rounded-xl py-2.5 transition-all duration-200">
               Login as Admin
             </button>
           </div>
-        </div>
 
-        <p className="text-slate-700 text-[11px] text-center mt-4">
-          Demo credentials — any email and password accepted
-        </p>
+          <p className="text-slate-700 text-[10px] text-center mt-5">
+            Demo build — any credentials accepted
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -790,7 +828,7 @@ if (!role) {
 </div>
 </div>
 
-<div className="px-6 pb-3 flex items-center gap-2">
+<div className="px-4 pb-3 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
 
 <TabBtn active={tab === "chat"} onClick={() => setTab("chat")}>
   💬 Support Chat
@@ -835,7 +873,7 @@ if (!role) {
         <div className="flex flex-1 flex-col overflow-hidden" style={{ height: "calc(100vh - 112px)" }}>
 
           {/* Messages scroll area */}
-          <div className="flex-1 overflow-y-auto px-4 md:px-12 py-8 space-y-6">
+          <div className="flex-1 overflow-y-auto px-3 sm:px-6 md:px-12 py-5 sm:py-8 space-y-5">
             <div className="max-w-2xl mx-auto w-full space-y-6">
 
               {messages.map((msg) => {
@@ -874,8 +912,7 @@ if (!role) {
                     ))}
                   </div>
                 </div>
-              )}
-
+              )}F
               <div ref={bottomRef} />
             </div>
           </div>
@@ -923,13 +960,20 @@ if (!role) {
                   }
                 </button>
               </div>
-              <div className="flex items-center justify-between mt-2 px-1">
-                <span className="text-[11px] text-slate-700">⏎ Send · ⇧⏎ New line</span>
-                <button onClick={clearChat}
-                  className="text-[11px] text-slate-700 hover:text-slate-500 transition-colors">
-                  Clear conversation
-                </button>
-              </div>
+              {/* Quick action chips */}
+              <div className="flex flex-wrap gap-2 mt-3">
+               {QUICK_ACTIONS.map((action) => (
+               <button
+                key={action.label}
+                onClick={() => sendMessage(action.query)}
+               disabled={loading}
+               className="text-[11px] px-3 py-1.5 rounded-lg border border-slate-700/60
+               bg-slate-900/60 text-slate-500 hover:text-slate-200 hover:border-indigo-500/40
+              hover:bg-slate-800/60 transition-all duration-200 disabled:opacity-30">
+             {action.label}
+            </button>
+               ))}
+             </div>
             </div>
           </div>
 
@@ -955,7 +999,7 @@ if (!role) {
                 <h2 className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-3">
                   Operations Center
                 </h2>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                   <StatCard label="Operational Incidents"   value={analytics.total}            sub="This session"           accent="text-white"       icon="🎫" />
                   <StatCard label="Priority Investigations"  value={analytics.critical}         sub="Human queue triggered"  accent="text-red-400"     icon="🚨" />
                   <StatCard label="Escalation Rate" value={`${analytics.escRate}%`}    sub={`${analytics.escalated} escalated`} accent="text-orange-400" icon="⚡" />
@@ -1019,7 +1063,6 @@ if (!role) {
                   </div>
                 </div>
               )}
-
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-white font-semibold text-sm">Operational Activity Stream</h3>
@@ -1032,8 +1075,7 @@ if (!role) {
                   {[...ticketLog].reverse().map(t => <ActivityItem key={t.ticket_id} item={t} />)}
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {[
                   { label: "KB Assisted",   value: analytics.kbUsed,                                         color: "text-indigo-400",  icon: "📚" },
                   { label: "Auto-Resolved", value: analytics.total - analytics.escalated,                    color: "text-emerald-400", icon: "🤖" },
@@ -1047,12 +1089,13 @@ if (!role) {
                       <div className="text-slate-500 text-[11px]">{s.label}</div>
                     </div>
                   </div>
-                ))}
+               ))}
               </div>
             </>
           )}
         </div>
       )}
+      
 
       {/* ══ SUMMARIES TAB ════════════════════════════════════════ */}
       {tab === "summaries" && (
@@ -1099,7 +1142,6 @@ if (!role) {
           )}
         </div>
       )}
-
       {/* ══ QUEUE TAB ════════════════════════════════════════════ */}
       {tab === "queue" && (
         <div className="flex-1 overflow-y-auto px-6 py-6">
@@ -1110,7 +1152,6 @@ if (!role) {
               {escalationQueue.length} waiting
             </span>
           </div>
-
           {escalationQueue.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center">
               <div className="text-4xl mb-3">✅</div>
