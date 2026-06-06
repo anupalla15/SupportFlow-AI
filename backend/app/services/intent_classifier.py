@@ -158,26 +158,26 @@ INTENT_PATTERNS = {
 # ─────────────────────────────────────────────────────────────────────────────
 
 GREETING_RESPONSES = [
+    
     "Hi! I'm SupportFlow AI — FlowZint's enterprise support assistant. What can I help you with?",
-    "Hello! Ready to help with FlowZint platform issues. What's going on?",
-    "Hey! Workflows, integrations, billing, access — just tell me what's not working.",
-    "Bagunava! SupportFlow AI ikkade — FlowZint platform lo emi issue vastuundi?",  # Tenglish
-]
+    "Hello! Ready to assist with workflows, integrations, billing, and platform operations.",
+    "SupportFlow AI online. Describe the operational issue you're facing.",
+    "FlowZint enterprise support active — workflow, API, billing, or access issue unte cheppandi.",
+      ]  # Tenglish
 
 CASUAL_RESPONSES = [
-    "I'm SupportFlow AI, built for FlowZint enterprise support. Got a workflow, API, or billing issue?",
-    "I'm an AI support assistant for FlowZint's platform. What platform issue can I help resolve?",
-    "SupportFlow AI here. I'm best at fixing workflows, integrations, access, and billing issues.",
+    "SupportFlow AI active. Workflow, API, billing, or access issue unte cheppandi.",
+    "FlowZint enterprise support ready. Describe the platform issue you're facing.",
+    "SupportFlow AI online — integrations, workflows, billing, and access issues supported.",
 ]
 
 EMOTIONAL_RESPONSES = [
-    "Understood — let's cut to fixing this. What specifically stopped working?",
-    "Got it. Tell me what's not working and we'll get it sorted.",
-    "Let's focus on the issue. What happened and when did it start?",
-    "Frustrating situation — direct ga cheppandi emi jarigindi, fix cheyyali.",  # Tenglish
-    "Samajh gaya — seedha bataiye kya problem hai, theek karte hain.",           # Hinglish
+    "Issue acknowledged. Share what stopped working and when the failure started.",
+    "Operational issue detected. Describe the exact error or failed workflow.",
+    "Let's isolate the problem quickly. Which integration, workflow, or access flow failed?",
+    "Frustration detected — exact ga emi jarigindo cheppandi, troubleshoot chestam.",
+    "Problem understood — exact error share kariye, system diagnose karte hain.",
 ]
-
 # ─────────────────────────────────────────────────────────────────────────────
 # SECTION 4: CLASSIFIER LOGIC
 #
@@ -229,7 +229,7 @@ def classify_intent(message: str) -> str:
         "hi", "hello", "hey", "yo", "sup"
     ]
     ):
-     return "casual"
+       return "greeting"
 
 # EVERYTHING ELSE → LLM
     return "support"

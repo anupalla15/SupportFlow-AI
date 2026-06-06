@@ -159,6 +159,11 @@ function StatCard({ label, value, sub, accent, icon }) {
 
 function CriticalAlert({ alert, onDismiss }) {
   useEffect(() => {
+  if (!loading) return;
+
+  const interval = setInterval(() => {
+    setLoadingStep((prev) => (prev + 1) % loadingSteps.length);
+  }, 1200);
     const t = setTimeout(onDismiss, 6000);
     return () => clearTimeout(t);
   }, [onDismiss]);
@@ -616,6 +621,14 @@ export default function App() {
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const loadingSteps = [
+  "⚡ Analyzing workflow logs...",
+  "🔍 Checking escalation risk...",
+  "📚 Searching knowledge base...",
+  "🔌 Validating integrations..."
+];
+
+const [loadingStep, setLoadingStep] = useState(0);
   const [error, setError] = useState(null);
 
   const [ticketLog, setTicketLog] = useState([]);
@@ -882,7 +895,15 @@ if (!role) {
                 return <ChatMessage key={msg.id} msg={msg} />;
               })}
 
-              {loading && <TypingDots />}
+              {loading && (
+  <>
+    <TypingDots />
+
+    <div className="text-indigo-300 text-sm mt-3 animate-pulse">
+      {loadingSteps[loadingStep]}
+    </div>
+  </>
+)}
 
               {error && (
                 <div className="flex items-start gap-2 bg-red-950 border border-red-800 rounded-xl px-4 py-3 text-sm text-red-300">
