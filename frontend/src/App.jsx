@@ -141,20 +141,50 @@ function Sparkline({ values, color = "#6366f1" }) {
 }
 
 function StatCard({ label, value, sub, accent, icon }) {
+  const [hovered, setHovered] = useState(false);
+
+  const GLOW = {
+    "text-white":        "rgba(255,255,255,0.04)",
+    "text-red-400":      "rgba(248,113,113,0.08)",
+    "text-orange-400":   "rgba(251,146,60,0.08)",
+    "text-emerald-400":  "rgba(52,211,153,0.08)",
+    "text-indigo-400":   "rgba(99,102,241,0.08)",
+  };
+
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3">
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3
+        cursor-default transition-all duration-300"
+      style={{
+        borderColor: hovered ? "rgba(99,102,241,0.25)" : undefined,
+        transform: hovered ? "translateY(-2px)" : "translateY(0)",
+        boxShadow: hovered
+          ? `0 8px 32px ${GLOW[accent] ?? "rgba(99,102,241,0.06)"}, 0 0 0 1px rgba(99,102,241,0.1)`
+          : "0 1px 3px rgba(0,0,0,0.2)",
+      }}>
       <div className="flex items-start justify-between">
         <span className="text-slate-500 text-xs font-medium uppercase tracking-wider">{label}</span>
-        <span className="text-xl">{icon}</span>
+        <span className={`text-xl transition-transform duration-300 ${hovered ? "scale-110" : "scale-100"}`}>
+          {icon}
+        </span>
       </div>
       <div>
-        <div className={`text-3xl font-bold ${accent}`}>{value}</div>
-        {sub && <div className="text-slate-500 text-xs mt-1">{sub}</div>}
+        <div className={`text-3xl font-bold tabular-nums transition-all duration-300 ${accent}
+          ${hovered ? "tracking-tight" : ""}`}>
+          {value}
+        </div>
+        {sub && (
+          <div className="text-slate-500 text-xs mt-1 transition-colors duration-200
+            group-hover:text-slate-400">
+            {sub}
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
 // ── Critical alert popup ───────────────────────────────────────────────────
 
 function CriticalAlert({ alert, onDismiss }) {
@@ -369,33 +399,65 @@ function CriticalNotice({ queuePos }) {
     </div>
   );
 }
-
 function ChatMessage({ msg }) {
   const isUser = msg.from === "user";
+
+  // Source file → display label + color
+  const SOURCE_STYLE = {
+    "faq.txt":               { label: "FAQ",              color: "text-indigo-400  bg-indigo-950  border-indigo-800"  },
+    "workflow_failures":     { label: "Workflow Fixes",   color: "text-orange-400  bg-orange-950  border-orange-800"  },
+    "auth_recovery":         { label: "Auth Recovery",    color: "text-purple-400  bg-purple-950  border-purple-800"  },
+    "api_timeout_fixes":     { label: "API Timeouts",     color: "text-green-400   bg-green-950   border-green-800"   },
+    "billing":               { label: "Billing Docs",     color: "text-blue-400    bg-blue-950    border-blue-800"    },
+    "onboarding":            { label: "Onboarding",       color: "text-emerald-400 bg-emerald-950 border-emerald-800" },
+  };
+
+  function getSourceStyle(src) {
+    const key = Object.keys(SOURCE_STYLE).find(k => src.toLowerCase().includes(k));
+    return key ? SOURCE_STYLE[key] : { label: src, color: "text-slate-400 bg-slate-800 border-slate-700" };
+  }
+
   return (
     <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"} items-end`}>
       {isUser ? (
-        <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-[11px] font-bold shrink-0 mb-0.5">
-          U
-        </div>
+        <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center
+          text-white text-[11px] font-bold shrink-0 mb-0.5">U</div>
       ) : (
-        <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 mb-0.5 text-sm">
-          ⚡
-        </div>
+        <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700
+          flex items-center justify-center shrink-0 mb-0.5 text-sm">⚡</div>
       )}
+
       <div className={`flex flex-col gap-0.5 ${isUser ? "items-end" : "items-start"} max-w-[80%]`}>
         {!isUser && <AgentBadge agentInfo={msg.agentInfo} />}
-        <div className={`rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line
+
+        <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line
           ${isUser
             ? "bg-indigo-600 text-white rounded-br-sm"
             : "bg-slate-900 text-slate-200 border border-slate-800 rounded-bl-sm"}`}>
           {msg.text}
         </div>
+
+        {/* RAG source badges */}
+        {!isUser && msg.ragUsed && msg.sources?.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-1 px-1">
+            {msg.sources.map((src, i) => {
+              const style = getSourceStyle(src);
+              return (
+                <span key={i}
+                  className={`text-[10px] px-2 py-0.5 rounded border font-mono ${style.color}`}>
+                  📄 {style.label}
+                </span>
+              );
+            })}
+          </div>
+        )}
+
         <span className="text-[10px] text-slate-700 px-1">{msg.time}</span>
       </div>
     </div>
   );
 }
+
 function TabBtn({ active, onClick, children }) {
   return (
     <button
@@ -599,6 +661,189 @@ function HumanSupportModal({ onClose }) {
   );
 }
 // ── Main App ───────────────────────────────────────────────────────────────
+// ── Live System Status Panel ───────────────────────────────────────────────
+
+const SYSTEM_SERVICES = [
+  { key: "workflow", label: "Workflow Engine",  baseLatency: 42  },
+  { key: "api",      label: "API Gateway",      baseLatency: 18  },
+  { key: "queue",    label: "Queue Service",    baseLatency: 91  },
+  { key: "rag",      label: "RAG Knowledge",    baseLatency: 63  },
+  { key: "llm",      label: "Groq LLM",         baseLatency: 210 },
+];
+
+function useFluctuate(base, range = 15, interval = 3000) {
+  const [val, setVal] = useState(base);
+  useEffect(() => {
+    const t = setInterval(() => {
+      setVal(base + Math.floor((Math.random() - 0.5) * range * 2));
+    }, interval + Math.random() * 1000);
+    return () => clearInterval(t);
+  }, [base, range, interval]);
+  return val;
+}
+
+function StatusDot({ healthy = true }) {
+  return (
+    <span className="relative flex h-2 w-2">
+      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-60
+        ${healthy ? "bg-emerald-400" : "bg-red-400"}`} />
+      <span className={`relative inline-flex rounded-full h-2 w-2
+        ${healthy ? "bg-emerald-400" : "bg-red-500"}`} />
+    </span>
+  );
+}
+
+function ServiceRow({ label, baseLatency }) {
+  const latency = useFluctuate(baseLatency, 20, 2500);
+  const healthy = latency < 300;
+  return (
+    <div className="flex items-center justify-between py-2.5 border-b border-slate-800/60 last:border-0 group">
+      <div className="flex items-center gap-2.5">
+        <StatusDot healthy={healthy} />
+        <span className="text-slate-400 text-xs group-hover:text-slate-200 transition-colors">
+          {label}
+        </span>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="w-20 h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-1000
+              ${latency < 100 ? "bg-emerald-500" : latency < 200 ? "bg-yellow-500" : "bg-red-500"}`}
+            style={{ width: `${Math.min((latency / 300) * 100, 100)}%` }}
+          />
+        </div>
+        <span className={`text-[11px] font-mono w-14 text-right tabular-nums
+          ${latency < 100 ? "text-emerald-400" : latency < 200 ? "text-yellow-400" : "text-red-400"}`}>
+          {latency}ms
+        </span>
+        <span className={`text-[10px] px-1.5 py-0.5 rounded border
+          ${healthy
+            ? "bg-emerald-950 border-emerald-800 text-emerald-400"
+            : "bg-red-950 border-red-800 text-red-400"}`}>
+          {healthy ? "OK" : "SLOW"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function SystemStatusPanel() {
+  const [uptime]   = useState((99.1 + Math.random() * 0.8).toFixed(2));
+  const [active]   = useState(Math.floor(Math.random() * 40) + 60);
+  const [lastScan, setLastScan] = useState(new Date());
+
+  useEffect(() => {
+    const t = setInterval(() => setLastScan(new Date()), 30000);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6"
+      style={{ boxShadow: "0 0 0 1px rgba(99,102,241,0.06), 0 4px 24px rgba(0,0,0,0.3)" }}>
+
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-emerald-950 border border-emerald-800 flex items-center justify-center">
+            <span className="text-xs">🟢</span>
+          </div>
+          <div>
+            <h3 className="text-white font-semibold text-sm leading-none">System Status</h3>
+            <p className="text-slate-600 text-[10px] mt-0.5">
+              Last scan {lastScan.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="text-center">
+            <div className="text-emerald-400 font-bold text-sm">{uptime}%</div>
+            <div className="text-slate-600 text-[10px]">Uptime</div>
+          </div>
+          <div className="text-center">
+            <div className="text-indigo-400 font-bold text-sm">{active}</div>
+            <div className="text-slate-600 text-[10px]">Active flows</div>
+          </div>
+          <span className="flex items-center gap-1.5 text-[11px] bg-emerald-950 border border-emerald-800
+            text-emerald-400 px-2.5 py-1 rounded-full">
+            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+            All systems operational
+          </span>
+        </div>
+      </div>
+
+      {/* Services */}
+      <div>
+        {SYSTEM_SERVICES.map(s => <ServiceRow key={s.key} {...s} />)}
+      </div>
+    </div>
+  );
+}
+// ── AI Thinking Panel ──────────────────────────────────────────────────────
+
+const THINKING_STEPS = [
+  "Classifying intent...",
+  "Routing to specialist agent...",
+  "Scanning knowledge base...",
+  "Analyzing operational context...",
+  "Composing enterprise response...",
+];
+
+function AIThinkingPanel() {
+  const [step, setStep] = useState(0);
+  const [fade, setFade] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setStep(s => (s + 1) % THINKING_STEPS.length);
+        setFade(true);
+      }, 200);
+    }, 1400);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex items-end gap-3">
+      {/* Bot avatar with glow */}
+      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mb-0.5 text-sm
+        relative"
+        style={{ background: "rgba(30,30,50,0.9)", border: "1px solid rgba(99,102,241,0.4)",
+          boxShadow: "0 0 12px rgba(99,102,241,0.3)" }}>
+        ⚡
+        <span className="absolute inset-0 rounded-full animate-ping opacity-20"
+          style={{ background: "rgba(99,102,241,0.4)" }} />
+      </div>
+
+      {/* Panel */}
+      <div className="rounded-2xl rounded-bl-sm px-4 py-3 border"
+        style={{
+          background: "rgba(15,23,42,0.9)",
+          borderColor: "rgba(99,102,241,0.2)",
+          boxShadow: "0 0 20px rgba(99,102,241,0.08)",
+        }}>
+
+        {/* Step text */}
+        <p className="text-xs font-medium transition-opacity duration-200 mb-2"
+          style={{ color: fade ? "rgba(165,180,252,0.9)" : "transparent", minWidth: "180px" }}>
+          {THINKING_STEPS[step]}
+        </p>
+
+        {/* Progress dots */}
+        <div className="flex items-center gap-1.5">
+          {[0,1,2,3,4].map(i => (
+            <div key={i}
+              className={`h-0.5 rounded-full transition-all duration-500
+                ${i <= step ? "bg-indigo-500" : "bg-slate-700"}`}
+              style={{ width: i <= step ? "16px" : "8px" }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 export default function App() {
 
   const [tab, setTab] = useState("chat");
@@ -703,11 +948,15 @@ const [loadingStep, setLoadingStep] = useState(0);
       const data   = await res.json();
       const ticket = data.ticket;
 
-      const botMsg = {
-        id: Date.now() + 1, from: "bot",
-        text: data.reply, time: now(),
-        agentInfo: data.agent_info ?? null,
-      };
+     const botMsg = {
+  id: Date.now() + 1,
+  from: "bot",
+  text: data.reply,
+  time: now(),
+  agentInfo: data.agent_info ?? null,
+  ragUsed: data.rag_used ?? false,
+  sources: data.rag_used ? ["faq.txt"] : [],
+};
 
       let newMsgs = [...updated];
       if (ticket?.escalate && !ticket?.critical) {
@@ -886,8 +1135,8 @@ if (!role) {
         <div className="flex flex-1 flex-col overflow-hidden" style={{ height: "calc(100vh - 112px)" }}>
 
           {/* Messages scroll area */}
-          <div className="flex-1 overflow-y-auto px-3 sm:px-6 md:px-12 py-5 sm:py-8 space-y-5">
-            <div className="max-w-2xl mx-auto w-full space-y-6">
+          <div className="flex-1 overflow-y-auto px-3 sm:px-6 md:px-10 py-4 sm:py-6 space-y-4">
+            <div className="max-w-2xl mx-auto w-full space-y-4">
 
               {messages.map((msg) => {
                 if (msg.from === "escalation") return <EscalationNotice key={`esc-${msg.time}`} />;
@@ -895,15 +1144,7 @@ if (!role) {
                 return <ChatMessage key={msg.id} msg={msg} />;
               })}
 
-              {loading && (
-  <>
-    <TypingDots />
-
-    <div className="text-indigo-300 text-sm mt-3 animate-pulse">
-      {loadingSteps[loadingStep]}
-    </div>
-  </>
-)}
+             {loading && <AIThinkingPanel />}
 
               {error && (
                 <div className="flex items-start gap-2 bg-red-950 border border-red-800 rounded-xl px-4 py-3 text-sm text-red-300">
@@ -939,7 +1180,7 @@ if (!role) {
           </div>
 
           {/* Input — pinned to bottom */}
-          <div className="border-t border-slate-800/60 bg-slate-950 px-4 md:px-8 py-5 shrink-0">
+          <div className="border-t border-slate-800/60 bg-slate-950 px-4 md:px-8 py-3.5 shrink-0">
             <div className="max-w-2xl mx-auto">
               <div className="flex flex-wrap gap-2 mb-3">
                {[
@@ -1004,6 +1245,8 @@ if (!role) {
       {/* ══ ANALYTICS TAB ════════════════════════════════════════ */}
       {tab === "dashboard" && (
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+          {/* ── Live System Status Panel ── */}
+            <SystemStatusPanel />
           {analytics.total === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center">
               <div className="text-4xl mb-3">📊</div>

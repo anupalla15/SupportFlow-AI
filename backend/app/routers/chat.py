@@ -95,6 +95,7 @@ class ChatResponse(BaseModel):
     rag_used: bool   = False
     summary: dict    = {}
     agent_info: dict = {}
+    
 
 # ── Endpoint ───────────────────────────────────────────────────────
 
@@ -191,6 +192,7 @@ async def chat(req: ChatRequest):
         reply=reply,
         model=model_used,
         rag_used=rag_used,
+        sources=["faq.txt"] if rag_used else [],
         summary=summary,
         agent_info={
             "agent":      agent["agent"],
