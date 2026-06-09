@@ -34,14 +34,54 @@ FAQ_SECTIONS = _load_faq()
 
 # Keyword → section mapping (add more as your FAQ grows)
 TOPIC_KEYWORDS: dict[str, list[str]] = {
-    "RETURNS":  ["return", "refund", "send back", "money back", "exchange"],
-    "SHIPPING": ["shipping", "delivery", "ship", "arrive", "track", "package", "transit"],
-    "ACCOUNT":  ["account", "password", "login", "email", "sign in", "delete account"],
-    "ORDERS":   ["order", "cancel", "confirmation", "purchased", "buy", "bought"],
-    "PAYMENTS": ["payment", "pay", "card", "visa", "paypal", "charge", "billing", "invoice"],
-    "PRODUCT":  ["product", "warranty", "item", "custom", "bulk", "new product"],
+    "ABOUT_FLOWZINT": [
+        "flowzint", "about", "company", "who are you", "what is flowzint",
+        "contact", "phone", "email", "website", "services offered",
+    ],
+    "SERVICES": [
+        "services", "saas", "mobile", "web", "enterprise system",
+        "ai automation", "what do you offer", "what does flowzint do",
+        "digital transformation", "software development",
+    ],
+    "WORKFLOW": [
+        "workflow", "automation", "trigger", "action", "flow", "pipeline",
+        "task", "scheduled", "cron", "execution", "failed", "not running",
+        "stuck", "delay", "webhook", "automate", "not triggering",
+        "workflow error", "execution failed", "avvatledu", "run avvatledu",
+    ],
+    "BILLING": [
+        "billing", "invoice", "subscription", "plan", "upgrade", "downgrade",
+        "payment", "charge", "credit", "ai credits", "credits", "quota",
+        "limit", "renew", "renewal", "refund", "receipt", "overage",
+        "usage", "balance", "tier", "pricing", "upi", "razorpay",
+        "credit teerindi", "payment fail ayyindi",
+    ],
+    "ACCESS": [
+        "login", "access", "dashboard", "account", "password", "sign in",
+        "locked", "otp", "2fa", "two factor", "sso", "permissions",
+        "role", "team", "member", "invite", "user management", "admin",
+        "cannot access", "session", "logout", "profile", "settings",
+        "workspace", "organization", "onboarding", "setup",
+        "login avvatledu", "login nahi ho raha", "otp raledu",
+    ],
+    "API": [
+        "api", "api key", "endpoint", "rest", "sdk", "integration",
+        "connect", "oauth", "token", "rate limit", "401", "403", "500",
+        "request", "response", "payload", "header", "authentication",
+        "webhook", "callback", "timeout", "connection refused",
+        "api work avvatledu", "api nahi chal raha",
+    ],
+    "ONBOARDING": [
+        "onboarding", "setup", "getting started", "first time", "new account",
+        "tutorial", "guide", "template", "integration template", "free trial",
+        "help center", "documentation", "wizard",
+    ],
+    "SUPPORT_SLA": [
+        "sla", "response time", "support hours", "how long", "when will",
+        "emergency", "maintenance", "uptime", "99.9", "priority support",
+        "enterprise support", "support plan",
+    ],
 }
-
 
 # ── Public API ─────────────────────────────────────────────────────
 

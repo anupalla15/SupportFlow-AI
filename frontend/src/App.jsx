@@ -58,7 +58,7 @@ const QUICK_ACTIONS = [
 
 function formatHistory(messages) {
   return messages
-    .filter((m) => !["system","escalation","queue","critical"].includes(m.from))
+    .filter((m) => !["system", "escalation", "queue", "critical"].includes(m.from))
     .map((m) => ({ role: m.from === "user" ? "user" : "assistant", content: m.text }));
 }
 function now() { return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); }
@@ -155,8 +155,7 @@ function StatCard({ label, value, sub, accent, icon }) {
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3
-        cursor-default transition-all duration-300"
+      className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3 cursor-default transition-all duration-300"
       style={{
         borderColor: hovered ? "rgba(99,102,241,0.25)" : undefined,
         transform: hovered ? "translateY(-2px)" : "translateY(0)",
@@ -171,29 +170,21 @@ function StatCard({ label, value, sub, accent, icon }) {
         </span>
       </div>
       <div>
-        <div className={`text-3xl font-bold tabular-nums transition-all duration-300 ${accent}
-          ${hovered ? "tracking-tight" : ""}`}>
+        <div className={`text-3xl font-bold tabular-nums transition-all duration-300 ${accent} ${hovered ? "tracking-tight" : ""}`}>
           {value}
         </div>
         {sub && (
-          <div className="text-slate-500 text-xs mt-1 transition-colors duration-200
-            group-hover:text-slate-400">
-            {sub}
-          </div>
+          <div className="text-slate-500 text-xs mt-1">{sub}</div>
         )}
       </div>
     </div>
   );
 }
-// ── Critical alert popup ───────────────────────────────────────────────────
 
+// ── Critical alert popup ───────────────────────────────────────────────────
+// FIX: Removed broken useEffect that referenced out-of-scope App state variables.
 function CriticalAlert({ alert, onDismiss }) {
   useEffect(() => {
-  if (!loading) return;
-
-  const interval = setInterval(() => {
-    setLoadingStep((prev) => (prev + 1) % loadingSteps.length);
-  }, 1200);
     const t = setTimeout(onDismiss, 6000);
     return () => clearTimeout(t);
   }, [onDismiss]);
@@ -315,7 +306,7 @@ function ActivityItem({ item }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <span className="text-xs font-mono text-indigo-400">{item.ticket_id}</span>
-          {item.critical  && (
+          {item.critical && (
             <span className="text-[10px] bg-red-900 text-red-300 border border-red-700 px-1.5 py-0.5 rounded font-bold">
               CRITICAL
             </span>
@@ -346,7 +337,7 @@ function TypingDots() {
         ⚡
       </div>
       <div className="bg-slate-900 border border-slate-800 rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1.5">
-        {[0,1,2].map(i => (
+        {[0, 1, 2].map(i => (
           <span key={i} className="w-1.5 h-1.5 rounded-full bg-slate-600 animate-bounce"
             style={{ animationDelay: `${i * 0.15}s` }} />
         ))}
@@ -364,7 +355,6 @@ function AgentBadge({ agentInfo }) {
   );
 }
 
-// Soft escalation notice — enterprise wording
 function EscalationNotice() {
   return (
     <div className="max-w-[85%] mx-auto">
@@ -381,7 +371,6 @@ function EscalationNotice() {
   );
 }
 
-// Soft critical notice
 function CriticalNotice({ queuePos }) {
   return (
     <div className="max-w-[85%] mx-auto">
@@ -399,17 +388,17 @@ function CriticalNotice({ queuePos }) {
     </div>
   );
 }
+
 function ChatMessage({ msg }) {
   const isUser = msg.from === "user";
 
-  // Source file → display label + color
   const SOURCE_STYLE = {
-    "faq.txt":               { label: "FAQ",              color: "text-indigo-400  bg-indigo-950  border-indigo-800"  },
-    "workflow_failures":     { label: "Workflow Fixes",   color: "text-orange-400  bg-orange-950  border-orange-800"  },
-    "auth_recovery":         { label: "Auth Recovery",    color: "text-purple-400  bg-purple-950  border-purple-800"  },
-    "api_timeout_fixes":     { label: "API Timeouts",     color: "text-green-400   bg-green-950   border-green-800"   },
-    "billing":               { label: "Billing Docs",     color: "text-blue-400    bg-blue-950    border-blue-800"    },
-    "onboarding":            { label: "Onboarding",       color: "text-emerald-400 bg-emerald-950 border-emerald-800" },
+    "faq.txt":           { label: "FAQ",            color: "text-indigo-400  bg-indigo-950  border-indigo-800"  },
+    "workflow_failures": { label: "Workflow Fixes",  color: "text-orange-400  bg-orange-950  border-orange-800"  },
+    "auth_recovery":     { label: "Auth Recovery",   color: "text-purple-400  bg-purple-950  border-purple-800"  },
+    "api_timeout_fixes": { label: "API Timeouts",    color: "text-green-400   bg-green-950   border-green-800"   },
+    "billing":           { label: "Billing Docs",    color: "text-blue-400    bg-blue-950    border-blue-800"    },
+    "onboarding":        { label: "Onboarding",      color: "text-emerald-400 bg-emerald-950 border-emerald-800" },
   };
 
   function getSourceStyle(src) {
@@ -420,11 +409,9 @@ function ChatMessage({ msg }) {
   return (
     <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"} items-end`}>
       {isUser ? (
-        <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center
-          text-white text-[11px] font-bold shrink-0 mb-0.5">U</div>
+        <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-[11px] font-bold shrink-0 mb-0.5">U</div>
       ) : (
-        <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700
-          flex items-center justify-center shrink-0 mb-0.5 text-sm">⚡</div>
+        <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 mb-0.5 text-sm">⚡</div>
       )}
 
       <div className={`flex flex-col gap-0.5 ${isUser ? "items-end" : "items-start"} max-w-[80%]`}>
@@ -437,14 +424,12 @@ function ChatMessage({ msg }) {
           {msg.text}
         </div>
 
-        {/* RAG source badges */}
         {!isUser && msg.ragUsed && msg.sources?.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-1 px-1">
             {msg.sources.map((src, i) => {
               const style = getSourceStyle(src);
               return (
-                <span key={i}
-                  className={`text-[10px] px-2 py-0.5 rounded border font-mono ${style.color}`}>
+                <span key={i} className={`text-[10px] px-2 py-0.5 rounded border font-mono ${style.color}`}>
                   📄 {style.label}
                 </span>
               );
@@ -473,8 +458,8 @@ function TabBtn({ active, onClick, children }) {
   );
 }
 
-
 // ── Login Screen ───────────────────────────────────────────────────────────
+
 function LoginScreen({ onLogin }) {
   const [email, setEmail]         = useState("");
   const [password, setPassword]   = useState("");
@@ -495,23 +480,18 @@ function LoginScreen({ onLogin }) {
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
       style={{ background: "radial-gradient(ellipse at 60% 10%, #1e1b4b 0%, #0f172a 45%, #020617 100%)" }}>
 
-      {/* Grid overlay */}
       <div className="absolute inset-0 pointer-events-none opacity-30"
         style={{
           backgroundImage: "linear-gradient(rgba(99,102,241,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.06) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
         }} />
 
-      {/* Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
         style={{ background: "radial-gradient(ellipse, rgba(99,102,241,0.15) 0%, transparent 70%)" }} />
 
       <div className="relative z-10 w-full max-w-sm">
-
-        {/* Brand */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center
-            text-2xl shadow-2xl shadow-indigo-900/60 mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-2xl shadow-2xl shadow-indigo-900/60 mb-4">
             ⚡
           </div>
           <h1 className="text-white font-bold text-xl tracking-tight">SupportFlow AI</h1>
@@ -520,7 +500,6 @@ function LoginScreen({ onLogin }) {
           </p>
         </div>
 
-        {/* Card */}
         <div className="rounded-2xl p-7 border border-white/[0.07]"
           style={{
             background: "rgba(15, 23, 42, 0.85)",
@@ -540,8 +519,7 @@ function LoginScreen({ onLogin }) {
                 placeholder="you@company.com"
                 className="w-full bg-slate-800/70 border border-slate-700/80 text-slate-200
                   placeholder-slate-600 rounded-xl px-4 py-2.5 text-sm focus:outline-none
-                  focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40
-                  transition-all duration-200" />
+                  focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40 transition-all duration-200" />
             </div>
             <div>
               <label className="text-slate-500 text-[10px] uppercase tracking-widest block mb-1.5">
@@ -552,8 +530,7 @@ function LoginScreen({ onLogin }) {
                 onKeyDown={e => e.key === "Enter" && handleLogin("user")}
                 className="w-full bg-slate-800/70 border border-slate-700/80 text-slate-200
                   placeholder-slate-600 rounded-xl px-4 py-2.5 text-sm focus:outline-none
-                  focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40
-                  transition-all duration-200" />
+                  focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40 transition-all duration-200" />
             </div>
           </div>
 
@@ -606,13 +583,11 @@ function HumanSupportModal({ onClose }) {
           </button>
         </div>
 
-        {/* Status notice */}
         <div className="bg-indigo-950 border border-indigo-800 rounded-xl px-4 py-3 mb-4">
           <p className="text-indigo-300 text-xs font-medium">✅ Enterprise support team notified.</p>
           <p className="text-indigo-400 text-xs mt-0.5">Priority escalation initiated.</p>
         </div>
 
-        {/* Contact details */}
         <div className="space-y-3">
           <a href="mailto:contact@flowzint.in"
             className="flex items-center gap-3 bg-slate-800 hover:bg-slate-700 border border-slate-700
@@ -620,9 +595,7 @@ function HumanSupportModal({ onClose }) {
             <span className="text-base">✉️</span>
             <div>
               <p className="text-[10px] text-slate-500 uppercase tracking-wider">Email</p>
-              <p className="text-slate-200 text-sm group-hover:text-white transition-colors">
-                contact@flowzint.in
-              </p>
+              <p className="text-slate-200 text-sm group-hover:text-white transition-colors">contact@flowzint.in</p>
             </div>
           </a>
 
@@ -632,9 +605,7 @@ function HumanSupportModal({ onClose }) {
             <span className="text-base">📞</span>
             <div>
               <p className="text-[10px] text-slate-500 uppercase tracking-wider">Phone</p>
-              <p className="text-slate-200 text-sm group-hover:text-white transition-colors">
-                +91 8884397315
-              </p>
+              <p className="text-slate-200 text-sm group-hover:text-white transition-colors">+91 8884397315</p>
             </div>
           </a>
 
@@ -644,9 +615,7 @@ function HumanSupportModal({ onClose }) {
             <span className="text-base">🌐</span>
             <div>
               <p className="text-[10px] text-slate-500 uppercase tracking-wider">Support Portal</p>
-              <p className="text-slate-200 text-sm group-hover:text-white transition-colors">
-                flowzint.in/fz/contact.html
-              </p>
+              <p className="text-slate-200 text-sm group-hover:text-white transition-colors">flowzint.in/fz/contact.html</p>
             </div>
           </a>
         </div>
@@ -660,7 +629,7 @@ function HumanSupportModal({ onClose }) {
     </div>
   );
 }
-// ── Main App ───────────────────────────────────────────────────────────────
+
 // ── Live System Status Panel ───────────────────────────────────────────────
 
 const SYSTEM_SERVICES = [
@@ -700,9 +669,7 @@ function ServiceRow({ label, baseLatency }) {
     <div className="flex items-center justify-between py-2.5 border-b border-slate-800/60 last:border-0 group">
       <div className="flex items-center gap-2.5">
         <StatusDot healthy={healthy} />
-        <span className="text-slate-400 text-xs group-hover:text-slate-200 transition-colors">
-          {label}
-        </span>
+        <span className="text-slate-400 text-xs group-hover:text-slate-200 transition-colors">{label}</span>
       </div>
       <div className="flex items-center gap-3">
         <div className="w-20 h-1 bg-slate-800 rounded-full overflow-hidden">
@@ -741,7 +708,6 @@ function SystemStatusPanel() {
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6"
       style={{ boxShadow: "0 0 0 1px rgba(99,102,241,0.06), 0 4px 24px rgba(0,0,0,0.3)" }}>
 
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-emerald-950 border border-emerald-800 flex items-center justify-center">
@@ -772,13 +738,13 @@ function SystemStatusPanel() {
         </div>
       </div>
 
-      {/* Services */}
       <div>
         {SYSTEM_SERVICES.map(s => <ServiceRow key={s.key} {...s} />)}
       </div>
     </div>
   );
 }
+
 // ── AI Thinking Panel ──────────────────────────────────────────────────────
 
 const THINKING_STEPS = [
@@ -806,9 +772,7 @@ function AIThinkingPanel() {
 
   return (
     <div className="flex items-end gap-3">
-      {/* Bot avatar with glow */}
-      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mb-0.5 text-sm
-        relative"
+      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mb-0.5 text-sm relative"
         style={{ background: "rgba(30,30,50,0.9)", border: "1px solid rgba(99,102,241,0.4)",
           boxShadow: "0 0 12px rgba(99,102,241,0.3)" }}>
         ⚡
@@ -816,23 +780,18 @@ function AIThinkingPanel() {
           style={{ background: "rgba(99,102,241,0.4)" }} />
       </div>
 
-      {/* Panel */}
       <div className="rounded-2xl rounded-bl-sm px-4 py-3 border"
         style={{
           background: "rgba(15,23,42,0.9)",
           borderColor: "rgba(99,102,241,0.2)",
           boxShadow: "0 0 20px rgba(99,102,241,0.08)",
         }}>
-
-        {/* Step text */}
         <p className="text-xs font-medium transition-opacity duration-200 mb-2"
           style={{ color: fade ? "rgba(165,180,252,0.9)" : "transparent", minWidth: "180px" }}>
           {THINKING_STEPS[step]}
         </p>
-
-        {/* Progress dots */}
         <div className="flex items-center gap-1.5">
-          {[0,1,2,3,4].map(i => (
+          {[0, 1, 2, 3, 4].map(i => (
             <div key={i}
               className={`h-0.5 rounded-full transition-all duration-500
                 ${i <= step ? "bg-indigo-500" : "bg-slate-700"}`}
@@ -844,47 +803,72 @@ function AIThinkingPanel() {
     </div>
   );
 }
+
+const DEMO_CACHE = {
+  "my scheduled workflow stopped executing overnight": {
+    reply: "Workflow execution failure detected at scheduled trigger layer.\n\n• Navigate to Workflows > Execution History — check the failed step and error code\n• Verify webhook endpoint returns HTTP 200 within 5 seconds\n• Confirm schedule timezone is set to UTC (IST = UTC +5:30)\n• Check if retry policy is enabled under Workflow Settings > Error Handling\n\nIf execution logs show no step-level error, escalate to FlowZint support at contact@flowzint.in with your Workflow ID.",
+    agent: { agent: "Workflow Automation AI", department: "Automation & Workflows", emoji: "⚡", color: "orange" },
+    sources: ["faq.txt"],
+  },
+  "login nahi ho raha, otp bhi nahi aa raha": {
+    reply: "Login failure aur OTP delivery issue detect hua — dono ek saath ho rahe hain.\n\n• OTP ke liye registered email aur spam folder check karein\n• 5 baar galat password try kiya toh account 30 minutes ke liye lock hoga — wait karein\n• 2FA device lost hai toh contact@flowzint.in par email karein account verification ke saath\n• SSO use kar rahe hain toh apne IT admin se identity provider configuration verify karwayein\n\nTurant help ke liye: contact@flowzint.in | +91 8884397315",
+    agent: { agent: "Platform Access AI", department: "Platform & Access", emoji: "🔐", color: "purple" },
+    sources: ["faq.txt"],
+  },
+};
+
+// ── Main App ───────────────────────────────────────────────────────────────
+
 export default function App() {
 
   const [tab, setTab] = useState("chat");
-
-  // ── NEW ROLE STATES ─────────────────────────
   const [role, setRole] = useState(null);
   const [showHumanSupport, setShowHumanSupport] = useState(false);
 
-  // ── CHAT STATE ──────────────────────────────
   const [messages, setMessages] = useState([
     {
       id: 0,
       from: "bot",
       agentInfo: null,
-      text:
-        "SupportFlow AI — enterprise operational support for FlowZint workflows, integrations, billing, and platform systems.\n\nDescribe an issue or select a support scenario below.",
+      text: "SupportFlow AI — enterprise operational support for FlowZint workflows, integrations, billing, and platform systems.\n\nDescribe an issue or select a support scenario below.",
       time: now(),
     },
   ]);
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+
   const loadingSteps = [
-  "⚡ Analyzing workflow logs...",
-  "🔍 Checking escalation risk...",
-  "📚 Searching knowledge base...",
-  "🔌 Validating integrations..."
-];
+    "⚡ Analyzing workflow logs...",
+    "🔍 Checking escalation risk...",
+    "📚 Searching knowledge base...",
+    "🔌 Validating integrations..."
+  ];
+  const [loadingStep, setLoadingStep] = useState(0);
 
-const [loadingStep, setLoadingStep] = useState(0);
   const [error, setError] = useState(null);
-
   const [ticketLog, setTicketLog] = useState([]);
   const [summaries, setSummaries] = useState([]);
   const [trendPoints, setTrendPoints] = useState([0]);
-
   const [criticalAlert, setCriticalAlert] = useState(null);
   const [escalationQueue, setEscalationQueue] = useState([]);
 
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
+  // Loading step cycling
+  useEffect(() => {
+    if (!loading) return;
+    const interval = setInterval(() => {
+      setLoadingStep(prev => (prev + 1) % loadingSteps.length);
+    }, 1200);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   // ── Analytics ──────────────────────────────────────────────────
 
@@ -926,7 +910,44 @@ const [loadingStep, setLoadingStep] = useState(0);
     const text = (text_override || input).trim();
     if (!text || loading) return;
 
-    const t       = now();
+    // Demo cache
+    const cached = DEMO_CACHE[text.toLowerCase().trim()];
+    if (cached) {
+      const t = now();
+      const userMsg = { id: Date.now(), from: "user", text, time: t };
+      setMessages(prev => [...prev, userMsg]);
+      setInput("");
+      setLoading(true);
+
+      setTimeout(() => {
+        setLoading(false);
+        const botMsg = {
+          id: Date.now() + 1,
+          from: "bot",
+          text: cached.reply,
+          time: now(),
+          agentInfo: cached.agent,
+          ragUsed: true,
+          sources: cached.sources,
+        };
+        setMessages(prev => [...prev, botMsg]);
+        setTicketLog(prev => [...prev, {
+          ticket_id: `SF-${Math.floor(Math.random() * 9000) + 1000}`,
+          sentiment: "neutral",
+          priority: "medium",
+          escalate: false,
+          critical: false,
+          message: text,
+          time: t,
+          ragUsed: true,
+        }]);
+        inputRef.current?.focus();
+      }, 900);
+      return;
+    }
+
+    // Backend flow
+    const t = now();
     const userMsg = { id: Date.now(), from: "user", text, time: t };
     const updated = [...messages, userMsg];
     setMessages(updated);
@@ -940,23 +961,24 @@ const [loadingStep, setLoadingStep] = useState(0);
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text, history: formatHistory(updated) }),
       });
+
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.detail || `Server error ${res.status}`);
       }
 
-      const data   = await res.json();
+      const data = await res.json();
       const ticket = data.ticket;
 
-     const botMsg = {
-  id: Date.now() + 1,
-  from: "bot",
-  text: data.reply,
-  time: now(),
-  agentInfo: data.agent_info ?? null,
-  ragUsed: data.rag_used ?? false,
-  sources: data.rag_used ? ["faq.txt"] : [],
-};
+      const botMsg = {
+        id: Date.now() + 1,
+        from: "bot",
+        text: data.reply,
+        time: now(),
+        agentInfo: data.agent_info ?? null,
+        ragUsed: data.rag_used ?? false,
+        sources: data.rag_used ? ["faq.txt"] : [],
+      };
 
       let newMsgs = [...updated];
       if (ticket?.escalate && !ticket?.critical) {
@@ -968,183 +990,184 @@ const [loadingStep, setLoadingStep] = useState(0);
       newMsgs.push(botMsg);
       setMessages(newMsgs);
 
-      // Only log real support tickets — skip greetings/casual static responses
       if (data.model !== "static") {
-        setTicketLog(prev => [
-          ...prev,
-          { ...ticket, message: text, time: t, ragUsed: data.rag_used ?? false },
-        ]);
-        if (data.summary?.issue) setSummaries(prev => [data.summary, ...prev]);
+        setTicketLog(prev => [...prev, { ...ticket, message: text, time: t, ragUsed: data.rag_used ?? false }]);
+
+        if (data.summary?.issue) {
+          setSummaries(prev => [data.summary, ...prev]);
+        }
+
         if (ticket?.critical) {
           setCriticalAlert({ ticket_id: ticket.ticket_id, queue_position: ticket.queue_position });
-          setEscalationQueue(prev => [
-            { ...ticket, message: text, time: t, agent: data.agent_info?.agent ?? "Enterprise Support AI" },
-            ...prev,
-          ]);
+          setEscalationQueue(prev => [{
+            ...ticket, message: text, time: t,
+            agent: data.agent_info?.agent ?? "Enterprise Support AI",
+          }, ...prev]);
         }
+
         setTrendPoints(prev => [...prev, ticket?.escalate ? 1 : 0].slice(-12));
       }
-
     } catch (err) {
-      setError(err.message || "Could not reach the backend.");
+      setError(err.message || "Could not reach backend.");
     } finally {
       setLoading(false);
       inputRef.current?.focus();
     }
   }
 
+  // FIX: handleKeyDown and clearChat moved inside App component
   function handleKeyDown(e) {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
   }
 
   function clearChat() {
-    setMessages([{
-      id: 0, from: "bot", agentInfo: null,
-      text: "Hi! I'm SupportFlow AI — the official support assistant for FlowZint's enterprise platform.\n\nI can help with AI automation workflows, SaaS subscriptions, API integrations, platform access, and more.\n\nWhat can I help you with today?",
-      time: now(),
-    }]);
+    setMessages([
+      {
+        id: 0,
+        from: "bot",
+        agentInfo: null,
+        text: "SupportFlow AI — enterprise operational support for FlowZint workflows, integrations, billing, and platform systems.\n\nDescribe an issue or select a support scenario below.",
+        time: now(),
+      },
+    ]);
     setError(null);
   }
 
-  // ── Render ─────────────────────────────────────────────────────
- 
-if (!role) {
-  return <LoginScreen onLogin={(r) => setRole(r)} />;
-}
-  return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+  // Show login if no role
+  if (!role) {
+    return <LoginScreen onLogin={(r) => setRole(r)} />;
+  }
 
+  return (
+    <div className="min-h-screen flex flex-col bg-slate-950 text-white">
+
+      {/* Critical alert popup */}
       {criticalAlert && (
         <CriticalAlert alert={criticalAlert} onDismiss={() => setCriticalAlert(null)} />
       )}
-{showHumanSupport && (
-  <HumanSupportModal onClose={() => setShowHumanSupport(false)} />
-)}
 
-      {/* ── Header ── */}
-      <header className="border-b border-slate-800 bg-slate-950">
-        <div className="px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-900/50 text-lg">
+      {/* Human support modal */}
+      {showHumanSupport && (
+        <HumanSupportModal onClose={() => setShowHumanSupport(false)} />
+      )}
+
+      {/* ══ HEADER ══════════════════════════════════════════════ */}
+      <header className="border-b border-slate-800/60 bg-slate-950/95 backdrop-blur-xl sticky top-0 z-40 shrink-0">
+        <div className="px-4 pt-3 pb-2 flex items-center justify-between gap-3">
+
+          {/* Brand */}
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-base shadow-lg shadow-indigo-900/50">
               ⚡
             </div>
             <div>
-              <h1 className="text-white font-bold text-base leading-tight">SupportFlow AI</h1>
-              <p className="text-slate-500 text-[11px]">Enterprise Support · Powered by FlowZint</p>
+              <h1 className="text-white font-bold text-sm leading-none">SupportFlow AI</h1>
+              <p className="text-slate-600 text-[10px] mt-0.5">FlowZint Enterprise · Operational Intelligence</p>
             </div>
           </div>
 
-          <div className="hidden lg:flex items-center gap-2">
-            {[
-              { icon: "⚡", label: "Workflow AI" },
-              { icon: "💳", label: "Billing AI"  },
-              { icon: "🔌", label: "API AI"       },
-              { icon: "🔐", label: "Access AI"    },
-            ].map(b => (
-              <span key={b.label}
-                className="flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-full
-                  bg-slate-900 border border-slate-800 text-slate-500">
-                <span>{b.icon}</span><span>{b.label}</span>
-              </span>
-            ))}
+          {/* Right controls */}
+          <div className="flex items-center gap-3">
+
+            {/* Human support button */}
+            <button
+              onClick={() => setShowHumanSupport(true)}
+              className="hidden sm:flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-lg
+                bg-slate-800 border border-slate-700 text-slate-400
+                hover:border-indigo-500/50 hover:text-slate-200 transition-all duration-200">
+              👤 Human Support
+            </button>
+
+            {/* Clear chat */}
+            <button
+              onClick={clearChat}
+              className="hidden sm:flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-lg
+                bg-slate-800 border border-slate-700 text-slate-400
+                hover:border-slate-600 hover:text-slate-200 transition-all duration-200">
+              🗑 Clear
+            </button>
+
+            {/* Online indicator */}
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+              <span className="text-emerald-400 text-xs font-medium">Online</span>
+            </div>
+
+            {/* Role badge */}
+            <span className={`text-[11px] px-2.5 py-1 rounded-full border font-medium
+              ${role === "admin"
+                ? "bg-indigo-950 border-indigo-800 text-indigo-400"
+                : "bg-slate-800 border-slate-700 text-slate-400"
+              }`}>
+              {role === "admin" ? "⚙ Admin" : "👤 User"}
+            </span>
+
+            {/* Sign out */}
+            <button
+              onClick={() => setRole(null)}
+              className="text-slate-600 hover:text-slate-400 text-[11px] transition-colors">
+              Sign out
+            </button>
+
           </div>
-<div className="flex items-center gap-3">
+        </div>
 
-  {/* Human Support */}
-  <button
-    onClick={() => setShowHumanSupport(true)}
-    className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700
-      text-slate-300 text-xs px-3 py-1.5 rounded-lg transition-colors"
-  >
-    👤 Human Support
-  </button>
+        {/* Tab bar */}
+        <div className="px-4 pb-3 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+          <TabBtn active={tab === "chat"} onClick={() => setTab("chat")}>
+            💬 Support Chat
+          </TabBtn>
 
-  {/* Role Badge */}
-  <span
-    className={`text-[11px] px-2.5 py-1 rounded-full border font-medium
-      ${
-        role === "admin"
-          ? "bg-indigo-950 border-indigo-800 text-indigo-400"
-          : "bg-slate-800 border-slate-700 text-slate-400"
-      }`}
-  >
-    {role === "admin" ? "⚙ Admin" : "👤 User"}
-  </span>
+          {role === "admin" && (
+            <>
+              <TabBtn active={tab === "dashboard"} onClick={() => setTab("dashboard")}>
+                📊 Analytics
+                {analytics.total > 0 && (
+                  <span className="ml-1.5 bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                    {analytics.total}
+                  </span>
+                )}
+              </TabBtn>
 
-  {/* Sign Out */}
-  <button
-    onClick={() => setRole(null)}
-    className="text-slate-600 hover:text-slate-400 text-[11px] transition-colors"
-  >
-    Sign out
-  </button>
+              <TabBtn active={tab === "summaries"} onClick={() => setTab("summaries")}>
+                📋 Summaries
+                {summaries.length > 0 && (
+                  <span className="ml-1.5 bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                    {summaries.length}
+                  </span>
+                )}
+              </TabBtn>
 
-  {/* Online */}
-  <div className="flex items-center gap-2">
-    <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-    <span className="text-emerald-400 text-xs font-medium">
-      Online
-    </span>
-  </div>
-
-</div>
-</div>
-
-<div className="px-4 pb-3 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
-
-<TabBtn active={tab === "chat"} onClick={() => setTab("chat")}>
-  💬 Support Chat
-</TabBtn>
-
-{/* Admin only */}
-{role === "admin" && (
-  <>
-    <TabBtn active={tab === "dashboard"} onClick={() => setTab("dashboard")}>
-      📊 Analytics
-      {analytics.total > 0 && (
-        <span className="ml-1.5 bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-          {analytics.total}
-        </span>
-      )}
-    </TabBtn>
-
-    <TabBtn active={tab === "summaries"} onClick={() => setTab("summaries")}>
-      📋 Summaries
-      {summaries.length > 0 && (
-        <span className="ml-1.5 bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-          {summaries.length}
-        </span>
-      )}
-    </TabBtn>
-
-    <TabBtn active={tab === "queue"} onClick={() => setTab("queue")}>
-      🚨 Queue
-      {escalationQueue.length > 0 && (
-        <span className="ml-1.5 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">
-          {escalationQueue.length}
-        </span>
-      )}
-    </TabBtn>
-  </>
-)}
-</div>
+              <TabBtn active={tab === "queue"} onClick={() => setTab("queue")}>
+                🚨 Queue
+                {escalationQueue.length > 0 && (
+                  <span className="ml-1.5 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">
+                    {escalationQueue.length}
+                  </span>
+                )}
+              </TabBtn>
+            </>
+          )}
+        </div>
       </header>
 
       {/* ══ CHAT TAB ═════════════════════════════════════════════ */}
       {tab === "chat" && (
         <div className="flex flex-1 flex-col overflow-hidden" style={{ height: "calc(100vh - 112px)" }}>
 
-          {/* Messages scroll area */}
           <div className="flex-1 overflow-y-auto px-3 sm:px-6 md:px-10 py-4 sm:py-6 space-y-4">
             <div className="max-w-2xl mx-auto w-full space-y-4">
 
               {messages.map((msg) => {
                 if (msg.from === "escalation") return <EscalationNotice key={`esc-${msg.time}`} />;
-                if (msg.from === "critical")   return <CriticalNotice   key={`crit-${msg.ticket?.ticket_id}`} queuePos={msg.ticket?.queue_position ?? 1} />;
+                if (msg.from === "critical")   return <CriticalNotice key={`crit-${msg.ticket?.ticket_id}`} queuePos={msg.ticket?.queue_position ?? 1} />;
                 return <ChatMessage key={msg.id} msg={msg} />;
               })}
 
-             {loading && <AIThinkingPanel />}
+              {loading && <AIThinkingPanel />}
 
               {error && (
                 <div className="flex items-start gap-2 bg-red-950 border border-red-800 rounded-xl px-4 py-3 text-sm text-red-300">
@@ -1153,7 +1176,6 @@ if (!role) {
                 </div>
               )}
 
-              {/* Suggested queries — only on fresh chat */}
               {messages.length === 1 && !loading && (
                 <div className="mt-4">
                   <p className="text-slate-600 text-xs mb-3 text-center tracking-wide uppercase">
@@ -1166,37 +1188,28 @@ if (!role) {
                           bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-3
                           hover:border-indigo-500/50 hover:text-slate-200 hover:bg-slate-800/60
                           transition-all duration-200 group">
-                        <span className="text-base mt-0.5 group-hover:scale-110 transition-transform">
-                          {q.icon}
-                        </span>
+                        <span className="text-base mt-0.5 group-hover:scale-110 transition-transform">{q.icon}</span>
                         <span className="leading-snug">{q.text}</span>
                       </button>
                     ))}
                   </div>
                 </div>
-              )}F
+              )}
+
               <div ref={bottomRef} />
             </div>
           </div>
 
-          {/* Input — pinned to bottom */}
+          {/* Input pinned to bottom */}
           <div className="border-t border-slate-800/60 bg-slate-950 px-4 md:px-8 py-3.5 shrink-0">
             <div className="max-w-2xl mx-auto">
               <div className="flex flex-wrap gap-2 mb-3">
-               {[
-                "Workflow failed overnight",
-               "API integration timeout",
-                "Dashboard access denied",
-               "Subscription renewal failed",
-               ].map((item) => (
-             <button
-             key={item}
-             onClick={() => setInput(item)}
-              className="rounded-full bg-slate-800 hover:bg-slate-700 text-[11px] px-3 py-1.5 transition"
-                 >
-              {item}
-              </button>
-                 ))}
+                {["Workflow failed overnight", "API integration timeout", "Dashboard access denied", "Subscription renewal failed"].map((item) => (
+                  <button key={item} onClick={() => setInput(item)}
+                    className="rounded-full bg-slate-800 hover:bg-slate-700 text-[11px] px-3 py-1.5 transition">
+                    {item}
+                  </button>
+                ))}
               </div>
               <div className="flex items-end gap-3 bg-slate-900 border border-slate-700/60
                 rounded-2xl px-4 py-3 focus-within:border-indigo-500/60 transition-colors duration-200">
@@ -1209,9 +1222,8 @@ if (!role) {
                   style={{ fieldSizing: "content" }} />
                 <button onClick={() => sendMessage()} disabled={!input.trim() || loading}
                   className="shrink-0 w-8 h-8 bg-indigo-600 hover:bg-indigo-500
-                    disabled:bg-slate-800 disabled:text-slate-600
-                    text-white rounded-xl flex items-center justify-center
-                    transition-colors duration-200 shadow-lg shadow-indigo-900/30">
+                    disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-xl
+                    flex items-center justify-center transition-colors duration-200 shadow-lg shadow-indigo-900/30">
                   {loading
                     ? <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
                         <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="32" strokeDashoffset="12" />
@@ -1222,20 +1234,16 @@ if (!role) {
                   }
                 </button>
               </div>
-              {/* Quick action chips */}
               <div className="flex flex-wrap gap-2 mt-3">
-               {QUICK_ACTIONS.map((action) => (
-               <button
-                key={action.label}
-                onClick={() => sendMessage(action.query)}
-               disabled={loading}
-               className="text-[11px] px-3 py-1.5 rounded-lg border border-slate-700/60
-               bg-slate-900/60 text-slate-500 hover:text-slate-200 hover:border-indigo-500/40
-              hover:bg-slate-800/60 transition-all duration-200 disabled:opacity-30">
-             {action.label}
-            </button>
-               ))}
-             </div>
+                {QUICK_ACTIONS.map((action) => (
+                  <button key={action.label} onClick={() => sendMessage(action.query)} disabled={loading}
+                    className="text-[11px] px-3 py-1.5 rounded-lg border border-slate-700/60
+                      bg-slate-900/60 text-slate-500 hover:text-slate-200 hover:border-indigo-500/40
+                      hover:bg-slate-800/60 transition-all duration-200 disabled:opacity-30">
+                    {action.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -1245,8 +1253,7 @@ if (!role) {
       {/* ══ ANALYTICS TAB ════════════════════════════════════════ */}
       {tab === "dashboard" && (
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-          {/* ── Live System Status Panel ── */}
-            <SystemStatusPanel />
+          <SystemStatusPanel />
           {analytics.total === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center">
               <div className="text-4xl mb-3">📊</div>
@@ -1260,14 +1267,12 @@ if (!role) {
           ) : (
             <>
               <div>
-                <h2 className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-3">
-                  Operations Center
-                </h2>
+                <h2 className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-3">Operations Center</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                  <StatCard label="Operational Incidents"   value={analytics.total}            sub="This session"           accent="text-white"       icon="🎫" />
-                  <StatCard label="Priority Investigations"  value={analytics.critical}         sub="Human queue triggered"  accent="text-red-400"     icon="🚨" />
-                  <StatCard label="Escalation Rate" value={`${analytics.escRate}%`}    sub={`${analytics.escalated} escalated`} accent="text-orange-400" icon="⚡" />
-                  <StatCard label="AI Resolution Success"   value={`${analytics.aiResolved}%`} sub="Resolved by AI"         accent="text-emerald-400" icon="✅" />
+                  <StatCard label="Operational Incidents"  value={analytics.total}            sub="This session"           accent="text-white"       icon="🎫" />
+                  <StatCard label="Priority Investigations" value={analytics.critical}         sub="Human queue triggered"  accent="text-red-400"     icon="🚨" />
+                  <StatCard label="Escalation Rate"        value={`${analytics.escRate}%`}    sub={`${analytics.escalated} escalated`} accent="text-orange-400" icon="⚡" />
+                  <StatCard label="AI Resolution Success"  value={`${analytics.aiResolved}%`} sub="Resolved by AI"         accent="text-emerald-400" icon="✅" />
                 </div>
               </div>
 
@@ -1327,6 +1332,7 @@ if (!role) {
                   </div>
                 </div>
               )}
+
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-white font-semibold text-sm">Operational Activity Stream</h3>
@@ -1339,6 +1345,7 @@ if (!role) {
                   {[...ticketLog].reverse().map(t => <ActivityItem key={t.ticket_id} item={t} />)}
                 </div>
               </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {[
                   { label: "KB Assisted",   value: analytics.kbUsed,                                         color: "text-indigo-400",  icon: "📚" },
@@ -1353,13 +1360,12 @@ if (!role) {
                       <div className="text-slate-500 text-[11px]">{s.label}</div>
                     </div>
                   </div>
-               ))}
+                ))}
               </div>
             </>
           )}
         </div>
       )}
-      
 
       {/* ══ SUMMARIES TAB ════════════════════════════════════════ */}
       {tab === "summaries" && (
@@ -1406,6 +1412,7 @@ if (!role) {
           )}
         </div>
       )}
+
       {/* ══ QUEUE TAB ════════════════════════════════════════════ */}
       {tab === "queue" && (
         <div className="flex-1 overflow-y-auto px-6 py-6">
@@ -1434,9 +1441,7 @@ if (!role) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className="text-sm font-mono text-indigo-400 font-semibold">{item.ticket_id}</span>
-                      <span className="text-[11px] bg-red-900 text-red-300 border border-red-700 px-2 py-0.5 rounded-full">
-                        CRITICAL
-                      </span>
+                      <span className="text-[11px] bg-red-900 text-red-300 border border-red-700 px-2 py-0.5 rounded-full">CRITICAL</span>
                       <span className="text-[11px] text-slate-500">{item.agent}</span>
                     </div>
                     <p className="text-sm text-slate-300 mb-3 truncate">{item.message}</p>

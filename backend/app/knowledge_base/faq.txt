@@ -1,52 +1,95 @@
-[BILLING]
-SupportFlow AI (powered by FlowZint) offers three subscription plans: Starter ($29/mo), Growth ($99/mo), and Enterprise (custom pricing).
-AI credits are consumed per workflow execution, API call, and AI model query. Credit usage is shown in real-time on your dashboard.
-Billing cycles renew on the same date each month. Invoices are sent to the registered email 3 days before renewal.
-To upgrade or downgrade your plan, go to Settings > Billing > Change Plan. Changes take effect at the next billing cycle.
-Refunds are available within 7 days of initial subscription purchase. Usage-based credits are non-refundable once consumed.
-If your payment fails, the system retries for 3 days before suspending the account. Update your card under Settings > Billing > Payment Method.
-Enterprise plans include dedicated AI credit pools, priority support SLAs, and custom integrations. Contact sales@flowzint.in for a quote.
-Credit top-ups are available in blocks of 1000, 5000, and 10000 credits from the Billing dashboard.
+[ABOUT_FLOWZINT]
+FlowZint is a technology company based in India building SaaS systems, AI & automation platforms, enterprise systems, web infrastructure, and mobile platforms.
+Official website: https://flowzint.in
+FlowZint's core mission is digital transformation for businesses through intelligent automation and enterprise-grade software.
+FlowZint serves startups, SMEs, and large enterprises across India and internationally.
+Contact FlowZint support: contact@flowzint.in
+Phone support: +91 8884397315
+Support portal: https://flowzint.in/fz/contact.html
+Business enquiries: https://flowzint.in/fz/business.html
+Partnership opportunities: https://flowzint.in/fz/partnership.html
+Career and internship opportunities: https://flowzint.in/fz/internships.html
+
+[SERVICES]
+FlowZint offers five core service verticals: SaaS Systems, AI & Automation, Enterprise Systems, Web Infrastructure, and Mobile Platforms.
+SaaS Systems: FlowZint builds subscription-based software products for business operations, team collaboration, and process management.
+AI & Automation: FlowZint develops AI-powered workflow automation, intelligent document processing, chatbot systems, and machine learning integrations.
+Enterprise Systems: FlowZint delivers large-scale ERP, CRM, and custom enterprise software tailored to organizational workflows.
+Web Infrastructure: FlowZint provides scalable web application development, cloud hosting setup, DevOps pipelines, and API architecture.
+Mobile Platforms: FlowZint builds cross-platform mobile applications for iOS and Android using modern frameworks.
+All FlowZint services include post-deployment support, documentation, and dedicated account management for enterprise clients.
 
 [WORKFLOW]
-FlowZint workflows are built using a drag-and-drop visual builder with triggers, conditions, actions, and output nodes.
-Common trigger types include: Webhook, Schedule (cron), Form Submit, API Event, and Manual Run.
-If a workflow fails, check the Execution Log under Workflows > History for the exact error step and message.
-Workflow execution delays over 5 minutes are usually caused by rate limits on connected third-party APIs.
-To debug a stuck workflow: disable it, check the last execution log, fix the failing node, then re-enable.
-Webhook triggers require a valid HTTPS endpoint. HTTP endpoints are not supported for security reasons.
-Scheduled workflows use UTC time by default. Configure timezone offset in Workflow Settings > Schedule.
-Failed workflows do not auto-retry by default. Enable retry logic under Workflow Settings > Error Handling.
-Maximum workflow execution time is 5 minutes for Starter, 15 minutes for Growth, and unlimited for Enterprise.
+FlowZint workflow automation allows businesses to build, schedule, and monitor automated processes without manual intervention.
+Workflows are built using a visual drag-and-drop builder with trigger nodes, condition nodes, action nodes, and output nodes.
+Supported trigger types: Webhook (HTTPS only), Scheduled (cron-based UTC), API Event, Form Submission, and Manual Run.
+If a workflow fails, navigate to Workflows > Execution History to view the failed step, error message, and timestamp.
+Workflow execution timeout limits: Starter plan 5 minutes, Growth plan 15 minutes, Enterprise plan unlimited.
+To debug a stuck workflow: disable the workflow, inspect the last execution log, fix the failing node, re-enable and test.
+Webhook triggers require HTTPS endpoints. HTTP endpoints are rejected for security compliance.
+Failed workflows do not auto-retry by default. Enable retry logic under Workflow Settings > Error Handling > Retry Policy.
+Scheduled workflows run in UTC timezone. Adjust for IST by adding +5:30 offset in the schedule configuration.
+For workflow execution delays exceeding 10 minutes, contact FlowZint support at contact@flowzint.in with your workflow ID.
+Maximum concurrent workflows: Starter 5, Growth 25, Enterprise unlimited.
+
+[BILLING]
+FlowZint subscription plans: Starter, Growth, and Enterprise. Contact sales for current pricing at contact@flowzint.in.
+AI credits are consumed per workflow execution step, API call processed, and AI model query made.
+Credit balance is displayed in real-time on your FlowZint dashboard under Account > Usage & Credits.
+Billing cycles renew monthly on the same date as initial subscription. Annual billing available for Enterprise plans.
+Invoices are sent to the registered account email 3 days before each renewal date.
+To upgrade or downgrade your plan: Settings > Billing > Change Plan. Changes apply from the next billing cycle.
+Payment failure triggers a 3-day grace period before account suspension. Update payment details at Settings > Billing > Payment Method.
+Accepted payment methods: Visa, Mastercard, UPI, Net Banking, and PayPal for international accounts.
+Credit top-ups are available in the dashboard under Account > Credits > Purchase Credits.
+Refund policy: Refunds on subscription fees are available within 7 days of initial purchase. Usage-based credits are non-refundable.
+Enterprise plans include dedicated credit pools, priority support SLA, custom integrations, and a dedicated account manager.
+For billing disputes or invoice corrections contact contact@flowzint.in with subject line: BILLING DISPUTE - [Account ID].
 
 [ACCESS]
-To reset your password, click "Forgot Password" on the login page. A reset link is sent to your registered email within 2 minutes.
-Two-factor authentication (2FA) can be enabled under Settings > Security. Supported methods: Authenticator App and SMS.
-If you are locked out after 5 failed login attempts, your account is temporarily suspended for 30 minutes for security.
-SSO (Single Sign-On) is available on Growth and Enterprise plans. Supported providers: Google Workspace, Microsoft Azure AD, Okta.
-To invite team members, go to Settings > Team > Invite Members. Role options: Admin, Editor, Viewer, API-Only.
-Workspace onboarding includes: account setup, first workflow creation, API key generation, and dashboard configuration.
-If a team member cannot access a workspace, ensure they have accepted the invitation email and are assigned the correct role.
-New users on Enterprise plans are assigned a dedicated onboarding specialist within 24 hours of signup.
+To reset your FlowZint account password: click Forgot Password on the login page. Reset link is sent within 2 minutes.
+Two-factor authentication (2FA) is available under Settings > Security. Supported methods: Authenticator App and SMS OTP.
+Account lockout occurs after 5 consecutive failed login attempts. Lockout duration is 30 minutes for security.
+SSO (Single Sign-On) is available on Growth and Enterprise plans. Supported identity providers: Google Workspace, Microsoft Azure AD, and Okta.
+To invite team members: Settings > Team Management > Invite Member. Assign roles: Admin, Editor, Viewer, or API-Only.
+If a team member cannot access the workspace after invitation, verify they accepted the email invite and are assigned the correct role.
+Workspace admin can revoke access at any time under Settings > Team Management > Manage Members.
+For account recovery when 2FA device is lost, contact contact@flowzint.in immediately with account verification details.
+New Enterprise accounts receive a dedicated onboarding specialist within 24 hours of signup.
+Session timeout is set to 8 hours of inactivity by default. Configurable under Settings > Security > Session Policy.
+For SSO configuration issues, share your identity provider metadata URL with contact@flowzint.in for assisted setup.
 
 [API]
-Your FlowZint API key can be generated at Settings > Developer > API Keys. Each key has configurable permissions and expiry.
-API authentication uses Bearer token format: Authorization: Bearer YOUR_API_KEY in the request header.
-The base URL for all FlowZint API endpoints is: https://api.flowzint.in/v1/
-Common HTTP error codes: 401 (invalid/expired API key), 403 (insufficient permissions), 429 (rate limit exceeded), 500 (platform error).
-Rate limits: Starter plan allows 100 requests/minute. Growth allows 1000 requests/minute. Enterprise has custom limits.
-Webhook payloads are sent as JSON POST requests. Ensure your endpoint returns HTTP 200 within 5 seconds or the delivery is retried.
-The FlowZint SDK is available for: Python, Node.js, and Go. Install via: pip install flowzint-sdk or npm install @flowzint/sdk.
-OAuth 2.0 is supported for third-party application integrations. Use the /auth/oauth/authorize endpoint to initiate the flow.
-
+FlowZint API base URL: https://api.flowzint.in/v1/
+Generate API keys at Settings > Developer > API Keys. Each key has configurable permissions, IP restrictions, and expiry dates.
+API authentication uses Bearer token format. Include in request header: Authorization: Bearer YOUR_API_KEY
+Common HTTP error codes: 401 (invalid or expired API key), 403 (insufficient permissions), 429 (rate limit exceeded), 500 (platform error).
+Rate limits by plan: Starter 100 requests/minute, Growth 1000 requests/minute, Enterprise custom negotiated limits.
+Webhook payloads are sent as JSON POST requests. Your endpoint must return HTTP 200 within 5 seconds or delivery is retried.
+Webhook retry policy: 3 attempts at 5-minute intervals, then marked as failed.
+FlowZint SDK available for Python, Node.js, and Go.
+Python install: pip install flowzint-sdk
+Node.js install: npm install @flowzint/sdk
+OAuth 2.0 supported for third-party application integrations. Initiate flow at /auth/oauth/authorize endpoint.
+API documentation and interactive playground available at https://flowzint.in — contact support for API docs access.
+For API outages or platform-side errors, contact contact@flowzint.in with request ID and HTTP response body.
+IP whitelisting for API keys available on Growth and Enterprise plans under Settings > Developer > API Security.
 
 [ONBOARDING]
-FlowZint's official website is https://flowzint.in
-FlowZint offers SaaS systems, AI & Automation, Enterprise Systems, Web Infrastructure, and Mobile Platforms.
-For business enquiries contact via https://flowzint.in/fz/business.html
-For partnership opportunities visit https://flowzint.in/fz/partnership.html
-For career and internship opportunities visit https://flowzint.in/fz/internships.html
-New enterprise clients are assigned an onboarding specialist — contact https://flowzint.in/fz/contact.html
-FlowZint's AI & Automation services page: https://flowzint.in/fz/ai-automation.html
-FlowZint's SaaS Systems page: https://flowzint.in/fz/saas-systems.html
-FlowZint's Enterprise Systems page: https://flowzint.in/fz/enterprise-systems.html
+FlowZint onboarding for new accounts includes: account setup wizard, first workflow creation, API key generation, and team invitation.
+The Setup Wizard launches automatically on first login and covers: business profile, first use case selection, team setup, and first live workflow.
+Integration templates available for: Slack, Notion, Google Sheets, Airtable, HubSpot, Salesforce, Razorpay, and 40+ platforms.
+Free trial: 14 days of Growth plan features with 500 AI credits included. No credit card required for trial signup.
+FlowZint Help Center and documentation: contact support at contact@flowzint.in or visit https://flowzint.in/fz/contact.html
+Video onboarding tutorials are available for all major features on the FlowZint YouTube channel.
+Enterprise clients receive a dedicated onboarding specialist, custom integration support, and a 30-day hypercare period post-launch.
+For onboarding issues or setup assistance contact contact@flowzint.in with subject: ONBOARDING SUPPORT - [Company Name].
+
+[SUPPORT_SLA]
+FlowZint support response SLAs: Starter plan 48 hours, Growth plan 24 hours, Enterprise plan 4 hours.
+Critical production issues on Enterprise plans receive immediate escalation to the Enterprise Operations Team.
+Support channels: Email (contact@flowzint.in), Phone (+91 8884397315), Support portal (https://flowzint.in/fz/contact.html).
+Support hours: Monday to Friday, 9:00 AM to 7:00 PM IST. Emergency support for Enterprise clients is 24/7.
+When reporting issues include: account ID, workflow or feature name, error message, steps to reproduce, and screenshots if available.
+FlowZint maintains a 99.9% uptime SLA for Growth and Enterprise plans. Starter plans have best-effort uptime.
+Planned maintenance windows are communicated 48 hours in advance via email to all account administrators.
