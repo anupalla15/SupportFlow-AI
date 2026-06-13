@@ -563,73 +563,92 @@ function LoginScreen({ onLogin }) {
     </div>
   );
 }
-
 // ── Human Support Modal ────────────────────────────────────────────────────
-
 function HumanSupportModal({ onClose }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.7)" }}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+    >
       <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-            <h3 className="text-white font-semibold text-sm">Enterprise Support Team</h3>
+            <h3 className="text-white font-semibold text-sm">
+              Enterprise Support Team
+            </h3>
           </div>
-          <button onClick={onClose}
-            className="text-slate-500 hover:text-slate-300 text-xl leading-none transition-colors">
+
+          <button
+            onClick={onClose}
+            className="text-slate-500 hover:text-slate-300 text-xl leading-none transition-colors"
+          >
             &times;
           </button>
         </div>
 
         <div className="bg-indigo-950 border border-indigo-800 rounded-xl px-4 py-3 mb-4">
-          <p className="text-indigo-300 text-xs font-medium">✅ Enterprise support team notified.</p>
-          <p className="text-indigo-400 text-xs mt-0.5">Priority escalation initiated.</p>
+          <p className="text-indigo-300 text-xs font-medium">
+            ✅ Enterprise support team notified.
+          </p>
+          <p className="text-indigo-400 text-xs mt-0.5">
+            Priority escalation initiated.
+          </p>
         </div>
 
         <div className="space-y-3">
-          <a href="mailto:contact@flowzint.in"
-            className="flex items-center gap-3 bg-slate-800 hover:bg-slate-700 border border-slate-700
-              rounded-xl px-4 py-3 transition-colors group">
-            <span className="text-base">✉️</span>
-            <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider">Email</p>
-              <p className="text-slate-200 text-sm group-hover:text-white transition-colors">contact@flowzint.in</p>
-            </div>
-          </a>
+          {[
+            {
+              href: "mailto:contact@flowzint.in",
+              icon: "✉️",
+              label: "Email Support",
+              value: "contact@flowzint.in",
+            },
+            {
+              href: "tel:+918884397315",
+              icon: "📞",
+              label: "Phone Support",
+              value: "+91 8884397315",
+            },
+            {
+              href: "https://flowzint.in/fz/contact.html",
+              icon: "🌐",
+              label: "Contact Portal",
+              value: "flowzint.in/fz/contact.html",
+            },
+          ].map((item) => (
+            <a
+              key={item.label}
+              href={item.href}
+              target={item.href.startsWith("http") ? "_blank" : undefined}
+              rel="noreferrer"
+              className="flex items-center gap-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl px-4 py-3 transition-colors group"
+            >
+              <span className="text-base">{item.icon}</span>
 
-          <a href="tel:+918884397315"
-            className="flex items-center gap-3 bg-slate-800 hover:bg-slate-700 border border-slate-700
-              rounded-xl px-4 py-3 transition-colors group">
-            <span className="text-base">📞</span>
-            <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider">Phone</p>
-              <p className="text-slate-200 text-sm group-hover:text-white transition-colors">+91 8884397315</p>
-            </div>
-          </a>
+              <div>
+                <p className="text-[10px] text-slate-500 uppercase tracking-wider">
+                  {item.label}
+                </p>
 
-          <a href="https://flowzint.in/fz/contact.html" target="_blank" rel="noreferrer"
-            className="flex items-center gap-3 bg-slate-800 hover:bg-slate-700 border border-slate-700
-              rounded-xl px-4 py-3 transition-colors group">
-            <span className="text-base">🌐</span>
-            <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider">Support Portal</p>
-              <p className="text-slate-200 text-sm group-hover:text-white transition-colors">flowzint.in/fz/contact.html</p>
-            </div>
-          </a>
+                <p className="text-slate-200 text-sm group-hover:text-white transition-colors">
+                  {item.value}
+                </p>
+              </div>
+            </a>
+          ))}
         </div>
 
-        <button onClick={onClose}
-          className="w-full mt-4 bg-slate-800 hover:bg-slate-700 border border-slate-700
-            text-slate-400 text-sm rounded-xl py-2.5 transition-colors">
+        <button
+          onClick={onClose}
+          className="w-full mt-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-400 text-sm rounded-xl py-2.5 transition-colors"
+        >
           Close
         </button>
       </div>
     </div>
   );
 }
-
 // ── Live System Status Panel ───────────────────────────────────────────────
 
 const SYSTEM_SERVICES = [
@@ -830,7 +849,7 @@ export default function App() {
       id: 0,
       from: "bot",
       agentInfo: null,
-      text: "SupportFlow AI — enterprise operational support for FlowZint workflows, integrations, billing, and platform systems.\n\nDescribe an issue or select a support scenario below.",
+      text: "Hi! I'm SupportFlow AI — the enterprise support intelligence for FlowZint's digital ecosystem.\n\nFlowZint builds SaaS systems, AI & automation platforms, enterprise systems, web infrastructure, and mobile platforms.\n\nDescribe your issue or select a scenario below.",
       time: now(),
     },
   ]);

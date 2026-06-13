@@ -1,127 +1,123 @@
 [ABOUT_FLOWZINT]
-FlowZint is a technology company based in India building SaaS systems, AI & automation platforms, enterprise systems, web infrastructure, and mobile platforms.
+FlowZint is a modern technology company building intelligent digital ecosystems, SaaS systems, AI-powered automation platforms, and enterprise infrastructure for global scale.
+FlowZint was established with a vision to build technology environments that go beyond traditional software implementation, focusing on intelligent engineering, operational scalability, and adaptive technology ecosystems.
+FlowZint's vision is to engineer intelligent digital ecosystems that help organizations operate more efficiently, scale more effectively, and evolve through modern technology and connected infrastructure.
+FlowZint's mission is to develop scalable digital infrastructures, AI-powered technologies, and modern SaaS ecosystems that help businesses modernize operations and build stronger digital foundations.
+FlowZint operates at the intersection of intelligent engineering, connected operational ecosystems, adaptive technologies, AI-powered systems, scalable digital infrastructures, and modern business transformation.
+FlowZint is building toward becoming an upcoming billion-dollar technology company revolutionizing digital ecosystems, SaaS systems, and enterprise automation.
+FlowZint's engineering philosophy centers on: clean architecture and scalable infrastructure, operational efficiency and intelligent integration, connected operational ecosystems, long-term maintainability, and adaptive evolution.
+FlowZint's core priorities include: scalability, operational clarity, intelligent automation, connected functionality, and long-term maintainability.
 Official website: https://flowzint.in
-FlowZint's core mission is digital transformation for businesses through intelligent automation and enterprise-grade software.
-FlowZint serves startups, SMEs, and large enterprises across India and internationally.
-Contact FlowZint support: contact@flowzint.in
-Phone support: +91 8884397315
-Support portal: https://flowzint.in/fz/contact.html
-Business enquiries: https://flowzint.in/fz/business.html
-Partnership opportunities: https://flowzint.in/fz/partnership.html
-Career and internship opportunities: https://flowzint.in/fz/internships.html
-
-[SERVICES]
-FlowZint offers five core service verticals: SaaS Systems, AI & Automation, Enterprise Systems, Web Infrastructure, and Mobile Platforms.
-SaaS Systems: FlowZint builds subscription-based software products for business operations, team collaboration, and process management.
-AI & Automation: FlowZint develops AI-powered workflow automation, intelligent document processing, chatbot systems, and machine learning integrations.
-Enterprise Systems: FlowZint delivers large-scale ERP, CRM, and custom enterprise software tailored to organizational workflows.
-Web Infrastructure: FlowZint provides scalable web application development, cloud hosting setup, DevOps pipelines, and API architecture.
-Mobile Platforms: FlowZint builds cross-platform mobile applications for iOS and Android using modern frameworks.
-All FlowZint services include post-deployment support, documentation, and dedicated account management for enterprise clients.
-
-[WORKFLOW]
-FlowZint workflow automation allows businesses to build, schedule, and monitor automated processes without manual intervention.
-Workflows are built using a visual drag-and-drop builder with trigger nodes, condition nodes, action nodes, and output nodes.
-Supported trigger types: Webhook (HTTPS only), Scheduled (cron-based UTC), API Event, Form Submission, and Manual Run.
-If a workflow fails, navigate to Workflows > Execution History to view the failed step, error message, and timestamp.
-Workflow execution timeout limits: Starter plan 5 minutes, Growth plan 15 minutes, Enterprise plan unlimited.
-To debug a stuck workflow: disable the workflow, inspect the last execution log, fix the failing node, re-enable and test.
-Webhook triggers require HTTPS endpoints. HTTP endpoints are rejected for security compliance.
-Failed workflows do not auto-retry by default. Enable retry logic under Workflow Settings > Error Handling > Retry Policy.
-Scheduled workflows run in UTC timezone. Adjust for IST by adding +5:30 offset in the schedule configuration.
-For workflow execution delays exceeding 10 minutes, contact FlowZint support at contact@flowzint.in with your workflow ID.
-Maximum concurrent workflows: Starter 5, Growth 25, Enterprise unlimited.
-
-[BILLING]
-FlowZint subscription plans: Starter, Growth, and Enterprise. Contact sales for current pricing at contact@flowzint.in.
-AI credits are consumed per workflow execution step, API call processed, and AI model query made.
-Credit balance is displayed in real-time on your FlowZint dashboard under Account > Usage & Credits.
-Billing cycles renew monthly on the same date as initial subscription. Annual billing available for Enterprise plans.
-Invoices are sent to the registered account email 3 days before each renewal date.
-To upgrade or downgrade your plan: Settings > Billing > Change Plan. Changes apply from the next billing cycle.
-Payment failure triggers a 3-day grace period before account suspension. Update payment details at Settings > Billing > Payment Method.
-Accepted payment methods: Visa, Mastercard, UPI, Net Banking, and PayPal for international accounts.
-Credit top-ups are available in the dashboard under Account > Credits > Purchase Credits.
-Refund policy: Refunds on subscription fees are available within 7 days of initial purchase. Usage-based credits are non-refundable.
-Enterprise plans include dedicated credit pools, priority support SLA, custom integrations, and a dedicated account manager.
-For billing disputes or invoice corrections contact contact@flowzint.in with subject line: BILLING DISPUTE - [Account ID].
-
-[ACCESS]
-To reset your FlowZint account password: click Forgot Password on the login page. Reset link is sent within 2 minutes.
-Two-factor authentication (2FA) is available under Settings > Security. Supported methods: Authenticator App and SMS OTP.
-Account lockout occurs after 5 consecutive failed login attempts. Lockout duration is 30 minutes for security.
-SSO (Single Sign-On) is available on Growth and Enterprise plans. Supported identity providers: Google Workspace, Microsoft Azure AD, and Okta.
-To invite team members: Settings > Team Management > Invite Member. Assign roles: Admin, Editor, Viewer, or API-Only.
-If a team member cannot access the workspace after invitation, verify they accepted the email invite and are assigned the correct role.
-Workspace admin can revoke access at any time under Settings > Team Management > Manage Members.
-For account recovery when 2FA device is lost, contact contact@flowzint.in immediately with account verification details.
-New Enterprise accounts receive a dedicated onboarding specialist within 24 hours of signup.
-Session timeout is set to 8 hours of inactivity by default. Configurable under Settings > Security > Session Policy.
-For SSO configuration issues, share your identity provider metadata URL with contact@flowzint.in for assisted setup.
-
-[API]
-FlowZint API base URL: https://api.flowzint.in/v1/
-Generate API keys at Settings > Developer > API Keys. Each key has configurable permissions, IP restrictions, and expiry dates.
-API authentication uses Bearer token format. Include in request header: Authorization: Bearer YOUR_API_KEY
-Common HTTP error codes: 401 (invalid or expired API key), 403 (insufficient permissions), 429 (rate limit exceeded), 500 (platform error).
-Rate limits by plan: Starter 100 requests/minute, Growth 1000 requests/minute, Enterprise custom negotiated limits.
-Webhook payloads are sent as JSON POST requests. Your endpoint must return HTTP 200 within 5 seconds or delivery is retried.
-Webhook retry policy: 3 attempts at 5-minute intervals, then marked as failed.
-FlowZint SDK available for Python, Node.js, and Go.
-Python install: pip install flowzint-sdk
-Node.js install: npm install @flowzint/sdk
-OAuth 2.0 supported for third-party application integrations. Initiate flow at /auth/oauth/authorize endpoint.
-API documentation and interactive playground available at https://flowzint.in — contact support for API docs access.
-For API outages or platform-side errors, contact contact@flowzint.in with request ID and HTTP response body.
-IP whitelisting for API keys available on Growth and Enterprise plans under Settings > Developer > API Security.
-
-[ONBOARDING]
-FlowZint onboarding for new accounts includes: account setup wizard, first workflow creation, API key generation, and team invitation.
-The Setup Wizard launches automatically on first login and covers: business profile, first use case selection, team setup, and first live workflow.
-Integration templates available for: Slack, Notion, Google Sheets, Airtable, HubSpot, Salesforce, Razorpay, and 40+ platforms.
-Free trial: 14 days of Growth plan features with 500 AI credits included. No credit card required for trial signup.
-FlowZint Help Center and documentation: contact support at contact@flowzint.in or visit https://flowzint.in/fz/contact.html
-Video onboarding tutorials are available for all major features on the FlowZint YouTube channel.
-Enterprise clients receive a dedicated onboarding specialist, custom integration support, and a 30-day hypercare period post-launch.
-For onboarding issues or setup assistance contact contact@flowzint.in with subject: ONBOARDING SUPPORT - [Company Name].
-
-[SUPPORT_SLA]
-FlowZint support response SLAs: Starter plan 48 hours, Growth plan 24 hours, Enterprise plan 4 hours.
-Critical production issues on Enterprise plans receive immediate escalation to the Enterprise Operations Team.
-Support channels: Email (contact@flowzint.in), Phone (+91 8884397315), Support portal (https://flowzint.in/fz/contact.html).
-Support hours: Monday to Friday, 9:00 AM to 7:00 PM IST. Emergency support for Enterprise clients is 24/7.
-When reporting issues include: account ID, workflow or feature name, error message, steps to reproduce, and screenshots if available.
-FlowZint maintains a 99.9% uptime SLA for Growth and Enterprise plans. Starter plans have best-effort uptime.
-Planned maintenance windows are communicated 48 hours in advance via email to all account administrators.
-
-[FLOWZINT_AI]
-FlowZint AI is an upcoming intelligent AI platform being developed by FlowZint Technologies.
-FlowZint AI is designed to support creators and developers in generating accessible, scalable, and fully autonomous digital experiences.
-Users can get notified about FlowZint AI launch at https://flowzint.in/fz/flowzintai-getnotified.html
-FlowZint AI represents an evolved and intelligent extension of FlowZint's core foundation.
-
-[AI_AUTOMATION]
-FlowZint's AI & Automation service develops AI-powered operational systems designed to improve efficiency and streamline workflows.
-Core capabilities include: workflow automation, process optimization, intelligent task management, adaptive automation, and operational intelligence.
-FlowZint automation systems reduce operational complexity, automate repetitive processes, and create intelligent digital ecosystems.
-Automated Task Engine components include: Data Ingestion (Multi-source Sync), AI Logic Engine (Processing Model), and Automated Execution (API Triggered).
-System health monitoring shows real-time latency metrics and workflow trigger status across the platform.
-
-[ENTERPRISE_SYSTEMS]
-FlowZint Enterprise Systems deliver large-scale ERP, CRM, and custom enterprise software tailored to organizational workflows.
-Enterprise solutions include: scalable operational ecosystems, connected business continuity, intelligent workflow coordination, and modernization services.
-FlowZint serves healthcare, education, retail & commerce, business enterprises, startups, real estate, and digital brands.
-
-[DIGITAL_TRANSFORMATION]
-FlowZint's Digital Transformation practice helps organizations modernize operations, improve operational intelligence, and optimize continuity.
-Transformation services combine scalable architectures, adaptive technologies, connected infrastructures, and intelligent engineering practices.
-FlowZint helps businesses reduce manual dependency, improve execution efficiency, and strengthen long-term operational scalability.
-
-[COMPANY_INFO]
-FlowZint Technologies is building intelligent digital ecosystems, SaaS systems, and enterprise automation platforms for global scale.
-Founded by Mr. Shridhar J and Mrs. Chaithra C.
 LinkedIn: https://linkedin.com/company/flowzint
 GitHub: https://github.com/flowzint
 YouTube: https://youtube.com/@flowzint
 Twitter: https://twitter.com/flowzint
-FlowZint's vision: upcoming billion-dollar technology company revolutionizing digital ecosystems.
+
+[CONTACT]
+FlowZint maintains structured communication channels for business discussions, operational coordination, partnership communication, and general assistance.
+Primary email: contact@flowzint.in
+Team and operations email: team@flowzint.in
+Helpdesk email: flowzint.helpdesk@gmail.com
+Phone support: +91 8884397315
+Contact portal: https://flowzint.in/fz/contact.html
+Business enquiries: https://flowzint.in/fz/business.html
+Partnership opportunities: https://flowzint.in/fz/partnership.html
+Careers and internship opportunities: https://flowzint.in/fz/internships.html
+Open job opportunities: https://flowzint.in/fz/opportunities.html
+FlowZint responds to all enquiries promptly through the appropriate team channel.
+For support and assistance queries use: contact@flowzint.in or the contact portal at https://flowzint.in/fz/contact.html
+For business projects and digital solution discussions contact: contact@flowzint.in
+For partnership and collaboration enquiries contact: contact@flowzint.in
+
+[FLOWZINT_AI]
+FlowZint AI is an upcoming intelligent AI platform being developed by FlowZint Technologies.
+FlowZint AI is designed to support creators and developers in generating accessible, scalable, and fully autonomous digital experiences.
+FlowZint AI represents an evolved and intelligent extension of FlowZint's core foundation.
+Users can get notified about the FlowZint AI launch at: https://flowzint.in/fz/flowzintai-getnotified.html
+FlowZint AI is currently in upcoming launch phase — exact release date has not been announced publicly.
+SupportFlow AI is built to serve as the enterprise support intelligence layer for FlowZint's platform ecosystem.
+
+[SERVICES]
+FlowZint offers six core service verticals: Web Infrastructure, Mobile Platforms, SaaS Systems, AI & Automation, Enterprise Systems, and Branding & Growth.
+All FlowZint services are engineered as operational infrastructure — not isolated technologies.
+FlowZint serves industries including: healthcare, education, retail and commerce, business enterprises, startups, real estate, and digital brands.
+For service enquiries and consultations contact: contact@flowzint.in or visit https://flowzint.in/fz/contact.html
+
+[WEB_INFRASTRUCTURE]
+FlowZint develops enterprise-grade web infrastructure designed to support scalable operations, connected digital experiences, intelligent functionality, and long-term business adaptability.
+FlowZint web infrastructure is engineered as operational systems, not just online interfaces.
+Core capabilities: high availability, load balancing, enterprise security, scalable architecture, distributed systems, responsive design, and intelligent integration.
+FlowZint web systems support: modern frontend ecosystems, scalable backend architecture, adaptive infrastructure, responsive digital systems, intelligent API integration, and future-focused engineering.
+FlowZint web infrastructure helps organizations: modernize digital operations, improve customer accessibility, strengthen digital scalability, and support operational continuity.
+For web infrastructure projects contact: contact@flowzint.in or visit https://flowzint.in/fz/web-infrastructure.html
+
+[MOBILE_PLATFORMS]
+FlowZint builds modern mobile ecosystems for usability, connected experiences, operational flexibility, and scalable customer interaction across environments.
+FlowZint mobile platforms are built for iOS and Android using modern cross-platform frameworks.
+Mobile solutions focus on: adaptive mobile ecosystems, operational flexibility, seamless digital experiences, and scalable customer interaction.
+For mobile platform projects contact: contact@flowzint.in or visit https://flowzint.in/fz/mobile-platforms.html
+
+[SAAS_SYSTEMS]
+FlowZint develops scalable SaaS systems designed to support connected operations, intelligent workflows, digital accessibility, and long-term business scalability across modern cloud-based environments.
+FlowZint SaaS engineering combines: scalable architecture, operational flexibility, intelligent system integration, and modern infrastructure thinking.
+SaaS systems are engineered as scalable operational ecosystems rather than standalone software platforms.
+Core SaaS capabilities: cloud infrastructure, multi-tenant architecture, high availability, API-first design, enterprise security, and intelligent system integration.
+FlowZint SaaS platforms support: operational centralization, workflow connectivity, intelligent process management, digital accessibility, connected system integration, and scalable operational coordination.
+FlowZint SaaS solutions help organizations: streamline digital operations, improve operational accessibility, strengthen workflow management, support scalable business growth, and centralize operational environments.
+For SaaS system projects contact: contact@flowzint.in or visit https://flowzint.in/fz/saas-systems.html
+
+[AI_AUTOMATION]
+FlowZint develops AI-powered operational systems and intelligent automation environments designed to help businesses improve efficiency, streamline workflows, strengthen operational visibility, and accelerate digital transformation.
+FlowZint AI and automation systems are built as integrated operational infrastructure — not isolated technologies.
+Core AI and automation capabilities: workflow automation, process optimization, intelligent task management, adaptive automation, operational intelligence, machine learning, and predictive systems.
+FlowZint Automated Task Engine components: Data Ingestion (Multi-source Sync), AI Logic Engine (Processing Model), and Automated Execution (API Triggered).
+FlowZint AI systems reduce operational complexity, automate repetitive processes, and create intelligent digital ecosystems capable of evolving alongside business growth.
+AI & Automation systems help organizations: streamline workflows, improve operational efficiency, automate repetitive processes, strengthen operational visibility, support scalable business operations, and modernize digital infrastructure.
+FlowZint AI systems focus on being: operationally practical, intelligently adaptive, scalable by design, workflow-focused, performance-oriented, and engineered for continuity.
+For AI and automation projects contact: contact@flowzint.in or visit https://flowzint.in/fz/ai-automation.html
+
+[ENTERPRISE_SYSTEMS]
+FlowZint develops integrated enterprise systems engineered to support scalable operational management, intelligent workflow coordination, and long-term digital continuity across evolving business environments.
+FlowZint enterprise systems centralize complex operations into unified, high-performance digital ecosystems.
+Enterprise architecture uses a three-layer model: Presentation Layer (Client Interfaces and Dashboards), Business Logic Layer (Microservices and API Gateway), and Data Layer (Scalable Databases and Storage).
+Core enterprise system capabilities: operational stability, scalable performance, connected workflows, operational intelligence, long-term maintainability, and adaptive enterprise systems.
+FlowZint enterprise systems help organizations: centralize complex operations, improve workflow coordination, strengthen operational visibility, support scalable organizational growth, and modernize enterprise infrastructure.
+Enterprise systems are designed for: zero-downtime architecture, massive data throughput, seamless workflow unification, smart analytics embedding, clean modular codebases, and organizational process adaptation.
+For enterprise system projects contact: contact@flowzint.in or visit https://flowzint.in/fz/enterprise-systems.html
+
+[DIGITAL_TRANSFORMATION]
+FlowZint Digital Transformation helps organizations modernize operations, improve operational intelligence, and optimize continuity through scalable architectures, adaptive technologies, connected infrastructures, and intelligent engineering practices.
+FlowZint helps businesses reduce manual dependency, improve execution efficiency, and strengthen long-term operational scalability.
+Digital transformation services include: business automation, AI transformation, enterprise infrastructure, customer experience, growth technology, and operational intelligence.
+FlowZint approaches technology as infrastructure — not temporary implementation — with every system designed for core engineering principles: scalability, operational clarity, intelligent automation, connected functionality, long-term maintainability, and adaptive evolution.
+For digital transformation consultation contact: contact@flowzint.in or visit https://flowzint.in/fz/digital-transformation.html
+
+[BUSINESS_AUTOMATION]
+FlowZint Business Automation builds connected automation ecosystems engineered to optimize workflows and improve operational performance.
+Automation capabilities include: workflow automation, process optimization, operational consistency, intelligent task management, scalable coordination, and adaptive performance.
+Business automation helps organizations: remove bottlenecks, accelerate organizational output, streamline digital workflows, and reduce manual operational dependency.
+For business automation projects contact: contact@flowzint.in or visit https://flowzint.in/fz/business-automation.html
+
+[CAREERS_INTERNSHIPS]
+FlowZint is actively building its engineering team and welcomes talented individuals in technology, AI, software development, and digital innovation.
+Career opportunities are available at: https://flowzint.in/fz/careers.html
+Open job opportunities: https://flowzint.in/fz/opportunities.html
+Internship programs: https://flowzint.in/fz/internships.html
+FlowZint hiring process information: https://flowzint.in/fz/hiring.html
+FlowZint culture focuses on: innovation, systems thinking, intelligent problem-solving, engineering ownership, and continuous learning.
+FlowZint believes: impactful technology is created through experimentation, collaboration, modern engineering discipline, and a strong commitment to solving real operational challenges.
+
+[INNOVATION]
+FlowZint continuously explores modern engineering models, intelligent automation technologies, scalable operational systems, and AI-powered environments shaping enterprise transformation.
+FlowZint Innovation page: https://flowzint.in/fz/innovation.html
+FlowZint focuses on building practical, scalable, and operationally valuable technology ecosystems aligned with evolving digital environments and future business operations.
+FlowZint's four innovation pillars: Innovation (intelligent digital systems powered by scalable technologies), Connected (connected operational environments for modern business), Future-Ready (scalable technology systems engineered for evolving operations), and Intelligent (AI-powered operational ecosystems focused on automation).
+
+[SUPPORT_CHANNELS]
+SupportFlow AI provides enterprise operational support for FlowZint's platform ecosystem.
+For issues that require human review contact FlowZint directly at: contact@flowzint.in
+Phone support available at: +91 8884397315
+Full contact options available at: https://flowzint.in/fz/contact.html
+FlowZint support team handles: business enquiries, operational coordination, partnership communication, and general platform assistance.
+For urgent operational issues use phone: +91 8884397315
+For non-urgent support queries use email: contact@flowzint.in or flowzint.helpdesk@gmail.com
