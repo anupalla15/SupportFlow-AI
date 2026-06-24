@@ -34,10 +34,10 @@ FAQ_SECTIONS = _load_faq()
 
 # Keyword → section mapping (add more as your FAQ grows)
 TOPIC_KEYWORDS: dict[str, list[str]] = {
-    "ABOUT_FLOWZINT": [
-        "flowzint", "about", "who is flowzint", "what is flowzint",
-        "company", "founded", "vision", "mission", "what do you do",
-        "billion dollar", "technology company",
+   "ABOUT_FLOWZINT": [
+    "what is flowzint", "who is flowzint", "about flowzint",
+    "flowzint company", "flowzint founded", "flowzint vision",
+    "flowzint mission", "billion dollar", "flowzint technology",
     ],
     "CONTACT": [
         "contact", "email", "phone", "reach", "support team",
@@ -69,12 +69,11 @@ TOPIC_KEYWORDS: dict[str, list[str]] = {
         "saas architecture", "cloud infrastructure",
     ],
     "AI_AUTOMATION": [
-        "ai automation", "workflow automation", "automation", "workflow",
-        "trigger", "pipeline", "task automation", "intelligent automation",
-        "ai system", "machine learning", "process automation",
-        "automated task", "ai powered", "avvatledu", "run avvatledu",
-        "workflow failed", "execution failed", "not triggering",
-    ],
+    "ai automation", "workflow automation", "workflow execution",
+    "task automation", "intelligent automation", "automated task",
+    "workflow failed", "execution failed", "not triggering",
+    "avvatledu", "run avvatledu", "automation platform",
+     ],
     "ENTERPRISE_SYSTEMS": [
         "enterprise", "enterprise system", "erp", "crm", "enterprise software",
         "large scale", "enterprise platform", "organizational", "enterprise grade",
@@ -115,7 +114,10 @@ def get_relevant_context(user_message: str, max_sections: int = 2) -> str:
     scores: dict[str, int] = {}
 
     for topic, keywords in TOPIC_KEYWORDS.items():
-        score = sum(1 for kw in keywords if kw in lowered)
+        score = sum(
+    1 for kw in keywords
+    if re.search(r'\b' + re.escape(kw) + r'\b', lowered)
+    )
         if score > 0:
             scores[topic] = score
 

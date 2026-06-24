@@ -42,6 +42,7 @@ const SUGGESTED = [
   { icon: "⚡", text: "My scheduled workflow stopped executing overnight" },
   { icon: "🔌", text: "API calls returning 401 after credential rotation" },
   { icon: "💳", text: "AI credits depleted faster than expected this cycle" },
+  { icon: "🔴", text: "Workflow failed and AI credits exhausted" },
   { icon: "🔐", text: "Team member cannot access the enterprise dashboard" },
   { icon: "🚀", text: "How do I connect FlowZint to our existing infrastructure?" },
   { icon: "📊", text: "Webhook triggers firing inconsistently in production" },
@@ -50,6 +51,7 @@ const SUGGESTED = [
 const QUICK_ACTIONS = [
   { label: "⚡ Workflow Failure",  query: "My workflow stopped executing — no triggers firing" },
   { label: "🔌 API Timeout",       query: "API calls timing out, getting 504 gateway errors"   },
+  { label: "🤝 Multi-Agent", query: "My workflow is failing because API requests are timing out" },
   { label: "💳 Billing Error",     query: "Payment failed and my subscription is now inactive" },
   { label: "🔐 Access Denied",     query: "Team member getting access denied on the dashboard" },
 ];
@@ -345,9 +347,36 @@ function TypingDots() {
     </div>
   );
 }
-
-function AgentBadge({ agentInfo }) {
+function AgentBadge({ agentInfo, agentInfo2, multiAgent }) {
   if (!agentInfo?.agent) return null;
+
+  // Multi-agent: show collaboration badge + both agent names
+  if (multiAgent && agentInfo2?.agent) {
+    return (
+      <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+        <div
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-semibold"
+          style={{
+            background:   "linear-gradient(135deg, rgba(99,102,241,0.15), rgba(251,146,60,0.12))",
+            borderColor:  "rgba(99,102,241,0.35)",
+            color:        "#a5b4fc",
+            boxShadow:    "0 0 16px rgba(99,102,241,0.15)",
+          }}>
+          <span className="text-xs">🤝</span>
+          Multi-Agent Response
+        </div>
+        <span className="text-[11px] text-slate-500">
+          {agentInfo.emoji} {agentInfo.agent}
+        </span>
+        <span className="text-slate-700 text-[10px]">+</span>
+        <span className="text-[11px] text-slate-500">
+          {agentInfo2.emoji} {agentInfo2.agent}
+        </span>
+      </div>
+    );
+  }
+
+  // Single agent: existing behaviour
   return (
     <span className="text-[11px] text-slate-600 px-1 mb-0.5">
       {agentInfo.emoji} {agentInfo.agent}
@@ -415,15 +444,43 @@ function ChatMessage({ msg }) {
       )}
 
       <div className={`flex flex-col gap-0.5 ${isUser ? "items-end" : "items-start"} max-w-[80%]`}>
-        {!isUser && <AgentBadge agentInfo={msg.agentInfo} />}
+        {!isUser && (
+  <AgentBadge
+    agentInfo={msg.agentInfo}
+    agentInfo2={msg.agentInfo2}
+    multiAgent={msg.multiAgent}
+  />
+)}
+<div
+  className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line
+    ${isUser
+      ? "bg-indigo-600 text-white rounded-br-sm"
+      : "bg-slate-900 text-slate-200 rounded-bl-sm"}`}
+  style={
+    !isUser
+      ? {
+          border: msg.multiAgent
+            ? "1px solid rgba(99,102,241,0.3)"
+            : "1px solid rgba(51,65,85,1)",
+          boxShadow: msg.multiAgent
+            ? "0 0 24px rgba(99,102,241,0.08)"
+            : undefined,
+        }
+      : undefined
+  }
+>
+  {msg.text}
 
-        <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line
-          ${isUser
-            ? "bg-indigo-600 text-white rounded-br-sm"
-            : "bg-slate-900 text-slate-200 border border-slate-800 rounded-bl-sm"}`}>
-          {msg.text}
-        </div>
-
+  {msg.streaming && (
+  <span
+    className="inline-block w-0.5 h-3.5 ml-0.5 align-middle rounded-sm"
+    style={{
+      backgroundColor: "#6366f1",
+      animation: "blink 1s step-end infinite",
+    }}
+  />
+)}
+</div>
         {!isUser && msg.ragUsed && msg.sources?.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-1 px-1">
             {msg.sources.map((src, i) => {
@@ -765,84 +822,297 @@ function SystemStatusPanel() {
 }
 
 // ── AI Thinking Panel ──────────────────────────────────────────────────────
-
-const THINKING_STEPS = [
-  "Classifying intent...",
-  "Routing to specialist agent...",
-  "Scanning knowledge base...",
-  "Analyzing operational context...",
-  "Composing enterprise response...",
-];
-
-function AIThinkingPanel() {
-  const [step, setStep] = useState(0);
-  const [fade, setFade] = useState(true);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setFade(false);
-      setTimeout(() => {
-        setStep(s => (s + 1) % THINKING_STEPS.length);
-        setFade(true);
-      }, 200);
-    }, 1400);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="flex items-end gap-3">
-      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mb-0.5 text-sm relative"
-        style={{ background: "rgba(30,30,50,0.9)", border: "1px solid rgba(99,102,241,0.4)",
-          boxShadow: "0 0 12px rgba(99,102,241,0.3)" }}>
-        ⚡
-        <span className="absolute inset-0 rounded-full animate-ping opacity-20"
-          style={{ background: "rgba(99,102,241,0.4)" }} />
-      </div>
-
-      <div className="rounded-2xl rounded-bl-sm px-4 py-3 border"
-        style={{
-          background: "rgba(15,23,42,0.9)",
-          borderColor: "rgba(99,102,241,0.2)",
-          boxShadow: "0 0 20px rgba(99,102,241,0.08)",
-        }}>
-        <p className="text-xs font-medium transition-opacity duration-200 mb-2"
-          style={{ color: fade ? "rgba(165,180,252,0.9)" : "transparent", minWidth: "180px" }}>
-          {THINKING_STEPS[step]}
-        </p>
-        <div className="flex items-center gap-1.5">
-          {[0, 1, 2, 3, 4].map(i => (
-            <div key={i}
-              className={`h-0.5 rounded-full transition-all duration-500
-                ${i <= step ? "bg-indigo-500" : "bg-slate-700"}`}
-              style={{ width: i <= step ? "16px" : "8px" }}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const DEMO_CACHE = {
-  "my scheduled workflow stopped executing overnight": {
-    reply: "Workflow execution failure detected at scheduled trigger layer.\n\n• Navigate to Workflows > Execution History — check the failed step and error code\n• Verify webhook endpoint returns HTTP 200 within 5 seconds\n• Confirm schedule timezone is set to UTC (IST = UTC +5:30)\n• Check if retry policy is enabled under Workflow Settings > Error Handling\n\nIf execution logs show no step-level error, escalate to FlowZint support at contact@flowzint.in with your Workflow ID.",
-    agent: { agent: "Workflow Automation AI", department: "Automation & Workflows", emoji: "⚡", color: "orange" },
-    sources: ["faq.txt"],
+// ── Enterprise AI Reasoning Panel ──────────────────────────────────────────
+const AGENT_SEQUENCES = {
+  workflow: {
+    label:  "Workflow Automation AI",
+    emoji:  "⚡",
+    color:  "#fb923c",
+    border: "rgba(251,146,60,0.2)",
+    glow:   "rgba(251,146,60,0.06)",
+    steps: [
+      "Intent classified",
+      "Workflow domain identified",
+      "Inspecting execution history",
+      "Checking trigger configuration",
+      "Retrieving automation documentation",
+      "Preparing operational response",
+    ],
   },
-  "login nahi ho raha, otp bhi nahi aa raha": {
-    reply: "Login failure aur OTP delivery issue detect hua — dono ek saath ho rahe hain.\n\n• OTP ke liye registered email aur spam folder check karein\n• 5 baar galat password try kiya toh account 30 minutes ke liye lock hoga — wait karein\n• 2FA device lost hai toh contact@flowzint.in par email karein account verification ke saath\n• SSO use kar rahe hain toh apne IT admin se identity provider configuration verify karwayein\n\nTurant help ke liye: contact@flowzint.in | +91 8884397315",
-    agent: { agent: "Platform Access AI", department: "Platform & Access", emoji: "🔐", color: "purple" },
-    sources: ["faq.txt"],
+  billing: {
+    label:  "Billing & Credits AI",
+    emoji:  "💳",
+    color:  "#60a5fa",
+    border: "rgba(96,165,250,0.2)",
+    glow:   "rgba(96,165,250,0.06)",
+    steps: [
+      "Intent classified",
+      "Billing domain identified",
+      "Reviewing subscription status",
+      "Checking credit consumption",
+      "Retrieving billing documentation",
+      "Preparing billing response",
+    ],
+  },
+  api: {
+    label:  "API Integration AI",
+    emoji:  "🔌",
+    color:  "#34d399",
+    border: "rgba(52,211,153,0.2)",
+    glow:   "rgba(52,211,153,0.06)",
+    steps: [
+      "Intent classified",
+      "API domain identified",
+      "Validating endpoint configuration",
+      "Checking authentication state",
+      "Retrieving integration documentation",
+      "Preparing technical response",
+    ],
+  },
+  access: {
+    label:  "Platform Access AI",
+    emoji:  "🔐",
+    color:  "#c084fc",
+    border: "rgba(192,132,252,0.2)",
+    glow:   "rgba(192,132,252,0.06)",
+    steps: [
+      "Intent classified",
+      "Access domain identified",
+      "Reviewing authentication flow",
+      "Checking permission configuration",
+      "Retrieving access documentation",
+      "Preparing recovery steps",
+    ],
+  },
+  multiagent: {
+    label:  "Multi-Agent Coordinator",
+    emoji:  "🤝",
+    color:  "#a5b4fc",
+    border: "rgba(165,180,252,0.25)",
+    glow:   "rgba(165,180,252,0.08)",
+    steps: [
+      "Intent classified",
+      "Multiple domains detected",
+      "Activating specialist agents",
+      "Cross-referencing knowledge base",
+      "Coordinating agent responses",
+      "Preparing unified response",
+    ],
+  },
+  general: {
+    label:  "Enterprise Support AI",
+    emoji:  "🏢",
+    color:  "#94a3b8",
+    border: "rgba(148,163,184,0.2)",
+    glow:   "rgba(148,163,184,0.04)",
+    steps: [
+      "Intent classified",
+      "Routing to support agent",
+      "Searching enterprise knowledge base",
+      "Preparing enterprise response",
+    ],
   },
 };
 
-// ── Main App ───────────────────────────────────────────────────────────────
+function AIThinkingPanel({ context = "general" }) {
+  const seq = AGENT_SEQUENCES[context] ?? AGENT_SEQUENCES.general;
 
+  const [stepIndex, setStepIndex] = useState(0);
+
+  // Reset whenever context changes (new message sent)
+  useEffect(() => {
+    setStepIndex(0);
+  }, [context, seq]);
+
+  // Advance one step every 750–900ms, hold on last step
+  useEffect(() => {
+    if (stepIndex >= seq.steps.length - 1) return;
+    const delay = 750 + Math.random() * 150;
+    const t = setTimeout(() => setStepIndex(s => s + 1), delay);
+    return () => clearTimeout(t);
+  }, [stepIndex, seq.steps.length]);
+
+  return (
+    <>
+      <style>{`
+        @keyframes enterprisePulse {
+          0%, 100% { opacity: 0.6; }
+          50%       { opacity: 0.15; }
+        }
+        @keyframes stepFadeIn {
+          from { opacity: 0; transform: translateX(-4px); }
+          to   { opacity: 1; transform: translateX(0);    }
+        }
+      `}</style>
+
+      <div className="flex items-start gap-3">
+
+        {/* Avatar */}
+        <div
+          className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-sm relative"
+          style={{
+            background: "rgba(15,23,42,0.95)",
+            border:     `1px solid ${seq.border}`,
+            boxShadow:  `0 0 10px ${seq.glow}`,
+          }}>
+          <span className="relative z-10 text-xs">{seq.emoji}</span>
+          {/* Soft pulse ring */}
+          <span
+            className="absolute inset-0 rounded-full"
+            style={{
+              border:    `1px solid ${seq.color}`,
+              opacity:   0.4,
+              animation: "enterprisePulse 2.4s ease-in-out infinite",
+            }}
+          />
+        </div>
+
+        {/* Panel */}
+        <div
+          className="rounded-2xl rounded-tl-sm px-4 py-3.5 flex-1"
+          style={{
+            background: "rgba(15,23,42,0.97)",
+            border:     `1px solid ${seq.border}`,
+            boxShadow:  `0 2px 16px ${seq.glow}`,
+          }}>
+
+          {/* Agent header */}
+          <div className="flex items-center gap-2 mb-3">
+            <span
+              className="text-[11px] font-semibold tracking-wide"
+              style={{ color: seq.color }}>
+              {seq.emoji} {seq.label}
+            </span>
+            {/* Live indicator dot */}
+            <span
+              className="w-1.5 h-1.5 rounded-full ml-auto shrink-0"
+              style={{
+                backgroundColor: seq.color,
+                animation:       "enterprisePulse 1.4s ease-in-out infinite",
+              }}
+            />
+          </div>
+
+          {/* Reasoning steps */}
+          <div className="space-y-2">
+            {seq.steps.map((step, i) => {
+              const done    = i < stepIndex;
+              const active  = i === stepIndex;
+              const pending = i > stepIndex;
+
+              return (
+                <div
+                  key={i}
+                  className="flex items-center gap-2.5"
+                  style={{
+                    opacity:   pending ? 0.3 : 1,
+                    animation: active ? "stepFadeIn 0.25s ease" : "none",
+                  }}>
+
+                  {/* Status icon */}
+                  <span className="w-4 h-4 flex items-center justify-center shrink-0">
+                    {done && (
+                      // Green checkmark
+                      <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none">
+                        <circle cx="8" cy="8" r="7" fill="rgba(52,211,153,0.15)"
+                          stroke="rgba(52,211,153,0.5)" strokeWidth="1" />
+                        <path d="M4.5 8.5l2.5 2.5 4-5"
+                          stroke="#34d399" strokeWidth="1.5"
+                          strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                    {active && (
+                      // Pulsing filled circle in agent color
+                      <svg viewBox="0 0 16 16" className="w-3.5 h-3.5">
+                        <circle cx="8" cy="8" r="7"
+                          fill={`${seq.color}18`}
+                          stroke={`${seq.color}60`} strokeWidth="1" />
+                        <circle cx="8" cy="8" r="3"
+                          fill={seq.color}
+                          style={{ animation: "enterprisePulse 1.2s ease-in-out infinite" }} />
+                      </svg>
+                    )}
+                    {pending && (
+                      // Empty dim circle
+                      <svg viewBox="0 0 16 16" className="w-3.5 h-3.5">
+                        <circle cx="8" cy="8" r="7"
+                          fill="none" stroke="rgba(71,85,105,0.6)" strokeWidth="1" />
+                      </svg>
+                    )}
+                  </span>
+
+                  {/* Step label */}
+                  <span
+                    className="text-xs transition-colors duration-200"
+                    style={{
+                      color:      done    ? "#64748b"
+                                : active  ? "#e2e8f0"
+                                : "#334155",
+                      fontWeight: active ? "500" : "400",
+                    }}>
+                    {step}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Streaming helper ───────────────────────────────────────────────────────
+
+async function streamText(fullText, onChunk, onDone) {
+  // Split on whitespace boundaries while preserving the whitespace tokens
+  // This gives natural word-by-word appearance including spaces and newlines
+  const tokens = fullText.split(/(\s+)/);
+
+  for (const token of tokens) {
+    onChunk(token);
+
+    // Punctuation-aware delays create natural reading rhythm
+    let delay = 18; // default: fast word flow
+    if (/[.!?]/.test(token))   delay = 65; // sentence end — noticeable pause
+    else if (/[,;:]/.test(token)) delay = 35; // clause pause
+    else if (/\n/.test(token))    delay = 45; // line break pause
+
+    await new Promise(r => setTimeout(r, delay));
+  }
+
+  onDone();
+}
+// ── Thinking context detector ───────────────────────────────────────────────
+
+function detectThinkingContext(text) {
+  const t = text.toLowerCase();
+
+  const score = (keywords) => keywords.filter(k => t.includes(k)).length;
+
+  const scores = {
+    workflow:   score(["workflow", "trigger", "pipeline", "execution", "automation", "webhook", "cron", "avvatledu", "scheduled"]),
+    billing:    score(["billing", "credit", "payment", "subscription", "invoice", "plan", "refund", "pricing"]),
+    api:        score(["api", "endpoint", "401", "403", "500", "token", "integration", "oauth", "sdk", "timeout", "request"]),
+    access:     score(["login", "access", "password", "otp", "2fa", "permission", "locked", "sso", "dashboard", "workspace"]),
+  };
+
+  const ranked = Object.entries(scores)
+    .filter(([, v]) => v > 0)
+    .sort(([, a], [, b]) => b - a);
+
+  if (ranked.length === 0)              return "general";
+  if (ranked.length >= 2 && ranked[1][1] >= 1) return "multiagent";
+  return ranked[0][0];
+}
 export default function App() {
 
   const [tab, setTab] = useState("chat");
   const [role, setRole] = useState(null);
   const [showHumanSupport, setShowHumanSupport] = useState(false);
+  const [conversationId] = useState(
+  () => `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+   );
 
   const [messages, setMessages] = useState([
     {
@@ -856,6 +1126,7 @@ export default function App() {
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [thinkingContext, setThinkingContext] = useState("general");
 
   const loadingSteps = [
     "⚡ Analyzing workflow logs...",
@@ -925,45 +1196,12 @@ export default function App() {
 
   // ── Send message ───────────────────────────────────────────────
 
-  async function sendMessage(text_override) {
+ async function sendMessage(text_override) {
     const text = (text_override || input).trim();
     if (!text || loading) return;
 
-    // Demo cache
-    const cached = DEMO_CACHE[text.toLowerCase().trim()];
-    if (cached) {
-      const t = now();
-      const userMsg = { id: Date.now(), from: "user", text, time: t };
-      setMessages(prev => [...prev, userMsg]);
-      setInput("");
-      setLoading(true);
+    setThinkingContext(detectThinkingContext(text));
 
-      setTimeout(() => {
-        setLoading(false);
-        const botMsg = {
-          id: Date.now() + 1,
-          from: "bot",
-          text: cached.reply,
-          time: now(),
-          agentInfo: cached.agent,
-          ragUsed: true,
-          sources: cached.sources,
-        };
-        setMessages(prev => [...prev, botMsg]);
-        setTicketLog(prev => [...prev, {
-          ticket_id: `SF-${Math.floor(Math.random() * 9000) + 1000}`,
-          sentiment: "neutral",
-          priority: "medium",
-          escalate: false,
-          critical: false,
-          message: text,
-          time: t,
-          ragUsed: true,
-        }]);
-        inputRef.current?.focus();
-      }, 900);
-      return;
-    }
 
     // Backend flow
     const t = now();
@@ -978,7 +1216,11 @@ export default function App() {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, history: formatHistory(updated) }),
+       body: JSON.stringify({
+    message: text,
+    history: formatHistory(updated),
+    conversation_id: conversationId,
+    }),
       });
 
       if (!res.ok) {
@@ -986,18 +1228,24 @@ export default function App() {
         throw new Error(err.detail || `Server error ${res.status}`);
       }
 
-      const data = await res.json();
-      const ticket = data.ticket;
-
-      const botMsg = {
-        id: Date.now() + 1,
-        from: "bot",
-        text: data.reply,
-        time: now(),
-        agentInfo: data.agent_info ?? null,
-        ragUsed: data.rag_used ?? false,
-        sources: data.rag_used ? ["faq.txt"] : [],
-      };
+    const data = await res.json();
+    const ticket = data.ticket;
+    setLoading(false);
+   const botMsg = {
+  id: Date.now() + 1,
+  from: "bot",
+  text: "",
+  streaming: true,
+  time: now(),
+    agentInfo: data.agent_info ?? null,
+    agentInfo2:
+    data.agent_info_2 && Object.keys(data.agent_info_2).length
+      ? data.agent_info_2
+      : null,
+   multiAgent: data.multi_agent ?? false,
+   ragUsed: data.rag_used ?? false,
+   sources: data.sources ?? [],
+   };
 
       let newMsgs = [...updated];
       if (ticket?.escalate && !ticket?.critical) {
@@ -1008,6 +1256,27 @@ export default function App() {
       }
       newMsgs.push(botMsg);
       setMessages(newMsgs);
+    await streamText(
+  data.reply,
+  (chunk) => {
+    setMessages(prev =>
+      prev.map(m =>
+        m.id === botMsg.id
+          ? { ...m, text: m.text + chunk }
+          : m
+      )
+    );
+  },
+  () => {
+    setMessages(prev =>
+      prev.map(m =>
+        m.id === botMsg.id
+          ? { ...m, streaming: false }
+          : m
+      )
+    );
+  }
+);
 
       if (data.model !== "static") {
         setTicketLog(prev => [...prev, { ...ticket, message: text, time: t, ragUsed: data.rag_used ?? false }]);
@@ -1053,6 +1322,12 @@ export default function App() {
       },
     ]);
     setError(null);
+    fetch(
+    `${API_URL.replace("/api/chat/", "")}/api/chat/reset?conversation_id=${conversationId}`,
+    {
+        method: "POST",
+    }
+   ).catch(() => {});
   }
 
   // Show login if no role
@@ -1067,6 +1342,12 @@ export default function App() {
       {criticalAlert && (
         <CriticalAlert alert={criticalAlert} onDismiss={() => setCriticalAlert(null)} />
       )}
+      <style>{`
+    @keyframes blink {
+    0%,100% { opacity:1; }
+    50% { opacity:0; }
+    }
+    `}</style>
 
       {/* Human support modal */}
       {showHumanSupport && (
@@ -1185,8 +1466,7 @@ export default function App() {
                 if (msg.from === "critical")   return <CriticalNotice key={`crit-${msg.ticket?.ticket_id}`} queuePos={msg.ticket?.queue_position ?? 1} />;
                 return <ChatMessage key={msg.id} msg={msg} />;
               })}
-
-              {loading && <AIThinkingPanel />}
+              {loading && <AIThinkingPanel context={thinkingContext} />}
 
               {error && (
                 <div className="flex items-start gap-2 bg-red-950 border border-red-800 rounded-xl px-4 py-3 text-sm text-red-300">

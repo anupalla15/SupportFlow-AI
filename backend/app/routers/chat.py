@@ -8,9 +8,10 @@ from app.services.sentiment import (
 )
 from app.services.rag_service import get_relevant_context
 from app.services.summary import generate_summary
-from app.services.agent_router import route_to_agent
+from app.services.agent_router import route_to_multiple_agents, AGENTS
 from app.services.intent_classifier import classify_intent, get_static_response  # ← NEW
 from app.services.llm_service import call_llm
+from app.services.conversation_memory import get_memory, reset_memory, cleanup_old_sessions
 
 router = APIRouter()
 
@@ -47,22 +48,49 @@ RULES:
 COMPANY KNOWLEDGE:
 {context}
 END KNOWLEDGE"""
+MULTI_AGENT_PROMPT = """You are coordinating a MULTI-AGENT RESPONSE from two FlowZint specialist teams.
 
+PRIMARY AGENT:   {primary_agent} — {primary_prompt}
+SECONDARY AGENT: {secondary_agent} — {secondary_prompt}
+
+RESPONSE FORMAT (follow exactly, no deviation):
+[{primary_label}]
+<2-3 sentences diagnosing the primary issue>
+
+[{secondary_label}]
+<2-3 sentences diagnosing the secondary issue>
+
+[Coordinated Resolution]
+<1 unified next step addressing both issues>
+
+RULES:
+- Total response under 120 words
+- Each section must be distinct — no repetition
+- Enterprise operational language throughout
+- End with exactly one actionable next step"""
+
+ESCALATION_PROMPT_SUFFIX = """
+ESCALATION ACTIVE: Acknowledge severity in one sentence.
+State Enterprise Operations Team notified.
+Give queue position.
+Keep response concise.
+"""
 # ── Schemas ────────────────────────────────────────────────────────
 
 class Message(BaseModel):
     role: str
     content: str
-
 class ChatRequest(BaseModel):
-    message: str
-    history: list[Message] = []
+    message:         str
+    history:         list[Message] = []
+    conversation_id: str           = "default"   # frontend passes this per session
 
     class Config:
         json_schema_extra = {
             "example": {
-                "message": "My scheduled workflow stopped executing overnight",
-                "history": []
+                "message":         "My scheduled workflow stopped executing overnight",
+                "history":         [],
+                "conversation_id": "session-abc123"
             }
         }
 
@@ -77,24 +105,25 @@ class TicketMeta(BaseModel):
 class ChatResponse(BaseModel):
     reply: str
     model: str
-    status: str      = "success"
+    status: str = "success"
     ticket: TicketMeta
-    rag_used: bool   = False
-    summary: dict    = {}
+    rag_used: bool = False
+    summary: dict = {}
     agent_info: dict = {}
+    agent_info_2: dict = {}
+    multi_agent: bool = False
+    sources: list = []
     
 
 # ── Endpoint ───────────────────────────────────────────────────────
-
 @router.post("/", response_model=ChatResponse, summary="Chat with SupportFlow AI")
 async def chat(req: ChatRequest):
 
-    # 1. Intent classification — handle non-support messages first  ← NEW
+    # 1. Intent classification
     intent = classify_intent(req.message)
     static_reply = get_static_response(intent)
 
     if static_reply:
-        # Non-support intent: return static response, no AI call needed
         return ChatResponse(
             reply=static_reply,
             model="static",
@@ -108,85 +137,222 @@ async def chat(req: ChatRequest):
             ),
         )
 
-    # 2. Sentiment analysis (support intent only)
-    sentiment      = analyze_sentiment(req.message)
-    priority       = get_priority(sentiment)
-    escalate       = should_escalate(sentiment)
-    critical       = is_critical(sentiment)
-    ticket_id      = generate_ticket_id()
+    # 2. Sentiment analysis
+    sentiment = analyze_sentiment(req.message)
+    priority = get_priority(sentiment)
+    escalate = should_escalate(sentiment)
+    critical = is_critical(sentiment)
+
+    ticket_id = generate_ticket_id()
     queue_position = generate_queue_position() if critical else None
 
-    # 3. Agent routing
-    agent        = route_to_agent(req.message)
-    agent_prompt = agent["prompt"]
+     # 3. Agent routing — memory-aware
+    memory = get_memory(req.conversation_id)
+    print("=" * 50)
+    print("MESSAGE:", req.message)
+    print("LOCK:", memory.should_lock_agent(req.message))
+    print("CATEGORY:", memory.case.category)
+    print("LOCKED AGENT:", memory.get_locked_agent_key())
+    print("=" * 50)
+
+    if memory.should_lock_agent(req.message):
+        # Follow-up message — keep the established agent
+        locked_key = memory.get_locked_agent_key()
+
+        if locked_key and locked_key in AGENTS:
+            primary = {**AGENTS[locked_key], "key": locked_key}
+
+            sec_key = memory.case.secondary_category
+            secondary = (
+                {**AGENTS[sec_key], "key": sec_key}
+                if sec_key and sec_key in AGENTS
+                else None
+            )
+
+            multi_agent = secondary is not None
+
+        else:
+            primary, secondary = route_to_multiple_agents(req.message)
+            multi_agent = secondary is not None
+
+    else:
+        # New message — handle topic switch then route normally
+        if memory.is_topic_switch(req.message):
+            memory.handle_topic_switch(req.message)
+
+        primary, secondary = route_to_multiple_agents(req.message)
+        multi_agent = secondary is not None
 
     # 4. RAG
-    context  = get_relevant_context(req.message)
+    context = get_relevant_context(req.message)
     rag_used = bool(context)
 
-    if rag_used:
-        system_prompt = (
-            f"{agent_prompt}\n\n"
-            "RULES:\n"
-            "1. COMPANY KNOWLEDGE below is the ONLY source of truth.\n"
-            "2. Answer ONLY using those facts.\n"
-            "3. NEVER invent policies.\n\n"
-            "══ COMPANY KNOWLEDGE ══\n"
-            f"{context}\n"
-            "══ END ══"
+    # 5. Build system prompt
+    if multi_agent:
+        system_prompt = MULTI_AGENT_PROMPT.format(
+            primary_agent=primary["agent"],
+            primary_prompt=primary["prompt"],
+            secondary_agent=secondary["agent"],
+            secondary_prompt=secondary["prompt"],
+            primary_label=primary["department"],
+            secondary_label=secondary["department"],
         )
+
+        if rag_used:
+            system_prompt += (
+                f"\n\nCOMPANY KNOWLEDGE (use where relevant):\n"
+                f"{context}\nEND KNOWLEDGE"
+            )
+
+    elif rag_used:
+        system_prompt = (
+            f"{BASE_PROMPT}\n\n"
+            f"SPECIALIST CONTEXT: {primary['prompt']}\n\n"
+            f"COMPANY KNOWLEDGE (answer ONLY from this):\n"
+            f"{context}\nEND KNOWLEDGE"
+        )
+
     else:
-        system_prompt = agent_prompt
+        system_prompt = (
+            f"{BASE_PROMPT}\n\n"
+            f"SPECIALIST CONTEXT: {primary['prompt']}"
+        )
 
     if critical:
         system_prompt += (
-            f"{ESCALATION_PROMPT_SUFFIX}\n\n"
-            f"Queue position: #{queue_position}. Mention this."
+            f"\n\n{ESCALATION_PROMPT_SUFFIX}\n"
+            f"Queue position: #{queue_position}"
         )
 
-    # 5. Build messages
-    headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json",
-    }
+    # 6. Build messages
+    memory_block = memory.build_memory_prompt()
 
-    messages = [{"role": "system", "content": system_prompt}]
-    for msg in req.history:
-        messages.append({"role": msg.role, "content": msg.content})
+    full_system = (
+        f"{system_prompt}\n\n{memory_block}"
+        if memory_block
+        else system_prompt
+    )
 
-    grounded_message = (
-        f"{req.message}\n\n[Use ONLY company knowledge. Do not invent.]"
-    ) if rag_used else req.message
+    user_content = req.message
 
-    messages.append({"role": "user", "content": grounded_message})
-    payload = {"model": MODEL, "messages": messages}
+    if memory.should_lock_agent(req.message):
+      user_content = memory.build_continuation_hint(req.message)
 
-    # 6. Call OpenRouter
-    # ── Call LLM (Groq → OpenRouter fallback) ─────────────────────
-    try:
-          reply, model_used = call_llm(messages)
-    except Exception as e:
-          raise HTTPException(status_code=500, detail=f"LLM error: {str(e)}")
+    if rag_used:
+     user_content += "\n\n[Use ONLY company knowledge. Do not invent.]"
 
-    # 7. Summary
-    full_convo = [{"role": m.role, "content": m.content} for m in req.history] + [
-        {"role": "user",      "content": req.message},
-        {"role": "assistant", "content": reply},
+    memory_prompt = memory.build_memory_prompt()
+
+    messages = [
+     {
+        "role": "system",
+        "content": full_system,
+     }
     ]
-    summary = generate_summary(full_convo, ticket_id)
+    processed = memory.build_processed_history()
 
+    if processed:
+        messages.extend(processed)
+    else:
+        for msg in req.history:
+            messages.append(
+                {
+                    "role": msg.role,
+                    "content": msg.content,
+                }
+            )
+
+    # If this is a follow-up, enrich it with memory
+
+    messages.append(
+    {
+        "role": "user",
+        "content": user_content,
+    }
+)
+
+     # 7. LLM Call
+    try:
+        print("=" * 60)
+        print("MEMORY PROMPT")
+        print(memory.build_memory_prompt())
+        print("=" * 60)
+
+        print("USER CONTENT")
+        print(user_content)
+        print("=" * 60)
+
+        reply, model_used = call_llm(messages)
+
+        # Update conversation memory
+        memory.update(req.message, reply)
+
+        if critical:
+            memory.mark_escalated()
+
+        print("=" * 60)
+        print("MODEL:", model_used)
+        print("REPLY:", repr(reply))
+        print("=" * 60)
+
+    except Exception as e:
+        print("LLM ERROR:", e)
+        raise HTTPException(
+            status_code=500,
+            detail=f"LLM error: {str(e)}"
+        )
+
+    # 8. Summary
+
+    full_convo = [
+        {
+            "role": m.role,
+            "content": m.content
+        }
+        for m in req.history
+    ]
+
+    full_convo.extend(
+        [
+            {
+                "role": "user",
+                "content": req.message
+            },
+            {
+                "role": "assistant",
+                "content": reply
+            }
+        ]
+    )
+
+    summary = generate_summary(
+        full_convo,
+        ticket_id
+    )
+
+    # 9. Response
     return ChatResponse(
         reply=reply,
         model=model_used,
         rag_used=rag_used,
         sources=["faq.txt"] if rag_used else [],
         summary=summary,
+        multi_agent=multi_agent,
+
         agent_info={
-            "agent":      agent["agent"],
-            "department": agent["department"],
-            "emoji":      agent["emoji"],
-            "color":      agent["color"],
+            "agent": primary["agent"],
+            "department": primary["department"],
+            "emoji": primary["emoji"],
+            "color": primary["color"],
         },
+
+        agent_info_2={
+            "agent": secondary["agent"],
+            "department": secondary["department"],
+            "emoji": secondary["emoji"],
+            "color": secondary["color"],
+        } if multi_agent else {},
+
         ticket=TicketMeta(
             ticket_id=ticket_id,
             sentiment=sentiment,
@@ -196,3 +362,17 @@ async def chat(req: ChatRequest):
             queue_position=queue_position,
         ),
     )
+
+
+# =====================================================================
+# Conversation Memory Reset Endpoint
+# PLACE THIS AFTER THE ENTIRE chat() FUNCTION
+# =====================================================================
+
+@router.post("/reset", summary="Reset conversation memory for a session")
+async def reset_conversation(conversation_id: str = "default"):
+    reset_memory(conversation_id)
+    return {
+        "status": "memory cleared",
+        "conversation_id": conversation_id,
+    }

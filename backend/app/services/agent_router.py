@@ -1,5 +1,5 @@
 # ── FlowZint Enterprise AI Agent Routing ───────────────────────────
-
+import re
 AGENTS = {
 
     "billing": {
@@ -34,7 +34,7 @@ AGENTS = {
         "color":      "orange",
 
         "keywords": [
-    "workflow", "trigger", "action", "flow", "pipeline",
+    "workflow", "trigger", "action",  "pipeline",
     "task", "scheduled", "cron", "execution", "failed",
     "not running", "stuck", "delay", "webhook",
     "not triggering", "workflow error",
@@ -48,15 +48,35 @@ AGENTS = {
         "prompt": (
     "You are SupportFlow AI handling AI & Automation workflows for FlowZint "
     "(https://flowzint.in/fz/ai-automation.html). "
+
     "Specialization: workflow execution failures, trigger misconfigurations, "
     "webhook issues, pipeline delays, automated task engine failures, "
-    "retry policy, and intelligent automation errors. "
-    "Response style: diagnostic first, then numbered action steps. "
-    "Ask: which workflow name, trigger type, and what the execution log shows. "
-    "Reference FlowZint's Automated Task Engine components when relevant: "
-    "Data Ingestion, AI Logic Engine, Automated Execution. "
-    "Escalate confirmed platform-side bugs to: contact@flowzint.in"
-     ),
+    "retry policy, execution logs, workflow dependencies and intelligent automation. "
+
+    "Always start with a diagnosis, then provide numbered troubleshooting steps. "
+
+    "IMPORTANT: The conversation memory may contain a section called "
+    "'Completed Troubleshooting'. "
+
+    "Never repeat any troubleshooting step that already appears in "
+    "'Completed Troubleshooting'. "
+
+    "Instead, continue from the next logical diagnostic step. "
+
+    "For example, if webhook, trigger configuration or execution log "
+    "have already been checked, do NOT ask the user to check them again. "
+
+    "Move forward by investigating retry policy, workflow dependencies, "
+    "AI Logic Engine, Automated Execution, platform logs, execution history, "
+    "resource provisioning or possible platform-side failures. "
+
+    "Ask only for information that has not already been collected. "
+
+    "Reference FlowZint's Automated Task Engine components when appropriate: "
+    "Data Ingestion, AI Logic Engine and Automated Execution. "
+
+    "Escalate confirmed platform-side issues to contact@flowzint.in."
+),
     },
 
     "access": {
@@ -137,33 +157,45 @@ AGENTS = {
      ),
     },
 }
+print("AGENTS =", AGENTS.keys())
 def route_to_multiple_agents(message: str) -> tuple[dict, dict | None]:
     lowered = message.lower()
     scores = {}
 
     for key, agent in AGENTS.items():
+
         if not agent["keywords"]:
             continue
 
-        score = sum(1 for kw in agent["keywords"] if kw in lowered)
+        score = 0
+
+        for kw in agent["keywords"]:
+            if kw.lower() in lowered:
+                score += 1
+
+        print(f"{key} -> {score}")
 
         if score > 0:
             scores[key] = score
+
+    print("FINAL SCORES =", scores)
 
     if not scores:
         return {**AGENTS["general"], "key": "general"}, None
 
     ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
 
+    print("RANKED =", ranked)
+
     primary_key = ranked[0][0]
     primary_agent = {**AGENTS[primary_key], "key": primary_key}
 
-    if len(ranked) >= 2 and ranked[1][1] >= 2:
+    secondary_agent = None
+    if len(ranked) >= 2 and ranked[1][1] > 0:
         secondary_key = ranked[1][0]
         secondary_agent = {**AGENTS[secondary_key], "key": secondary_key}
-        return primary_agent, secondary_agent
 
-    return primary_agent, None
+    return primary_agent, secondary_agent
 
 
 def route_to_agent(message: str):
