@@ -1117,7 +1117,6 @@ function detectThinkingContext(text) {
   return ranked[0][0];
 }
 // ── AI Processing Pipeline Panel ───────────────────────────────────────────
-
 const PIPELINE_COLORS = {
   intent:     { icon: "🎯", color: "#a5b4fc" },
   memory:     { icon: "🧠", color: "#c084fc" },
@@ -1129,11 +1128,42 @@ const PIPELINE_COLORS = {
 };
 
 function AIPipelinePanel({ pipeline, visible }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded]           = useState(false);
+  const [revealedCount, setRevealedCount] = useState(0);
+  const [activeIndex, setActiveIndex]     = useState(-1);
 
-  // Auto-expand on first real pipeline with more than 3 steps
+  // Auto-expand when a real pipeline arrives
   useEffect(() => {
     if (pipeline?.length > 3) setExpanded(true);
+  }, [pipeline]);
+
+  // Sequential reveal — one step every 175ms, with a brief "active" glow
+  useEffect(() => {
+    if (!pipeline?.length) return;
+    setRevealedCount(0);
+    setActiveIndex(0);
+
+    let current = 0;
+
+    const tick = () => {
+      setActiveIndex(current);
+
+      const revealTimer = setTimeout(() => {
+        setRevealedCount(current + 1);
+
+        current += 1;
+        if (current < pipeline.length) {
+          stepTimer = setTimeout(tick, 175);
+        } else {
+          setActiveIndex(-1);   // all done — no active step
+        }
+      }, 180);   // step glows for 180ms before checkmark locks in
+
+      return revealTimer;
+    };
+
+    let stepTimer = setTimeout(tick, 120);  // brief delay before first step
+    return () => clearTimeout(stepTimer);
   }, [pipeline]);
 
   if (!visible || !pipeline?.length) return null;
@@ -1143,124 +1173,202 @@ function AIPipelinePanel({ pipeline, visible }) {
   const memStep     = pipeline.find(s => s.id === "memory");
 
   return (
-    <div
-      className="rounded-xl border overflow-hidden transition-all duration-300"
-      style={{
-        background:   "rgba(15,23,42,0.8)",
-        borderColor:  "rgba(99,102,241,0.15)",
-        backdropFilter: "blur(8px)",
-      }}>
-
-      {/* Header — always visible, click to expand */}
-      <button
-        onClick={() => setExpanded(v => !v)}
-        className="w-full flex items-center gap-2.5 px-4 py-2.5
-          hover:bg-white/[0.02] transition-colors">
-
-        <span className="text-[11px] text-indigo-400 font-medium tracking-wide">
-          ⚙ AI Processing Pipeline
-        </span>
-
-        {/* Quick summary pills — visible even when collapsed */}
-        <div className="flex items-center gap-1.5 ml-1">
-          {routingStep && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded font-mono
-              bg-orange-950/60 border border-orange-800/40 text-orange-400">
-              {routingStep.detail.split(" · ")[0]}
-            </span>
-          )}
-          {ragStep?.status === "done" && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded font-mono
-              bg-indigo-950/60 border border-indigo-800/40 text-indigo-400">
-              RAG
-            </span>
-          )}
-          {memStep?.detail && memStep.detail !== "no prior context" && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded font-mono
-              bg-purple-950/60 border border-purple-800/40 text-purple-400">
-              mem
-            </span>
-          )}
-        </div>
-
-        <span className="ml-auto text-slate-600 text-xs">
-          {expanded ? "▲" : "▼"}
-        </span>
-      </button>
-
-      {/* Expanded step list */}
-      {expanded && (
-        <div className="px-4 pb-3 space-y-1.5 border-t border-slate-800/50 pt-2.5">
-          {pipeline.map((step, i) => {
-            const meta    = PIPELINE_COLORS[step.id] || { icon: "•", color: "#94a3b8" };
-            const skipped = step.status === "skipped";
-
-            return (
-              <div
-                key={step.id}
-                className="flex items-center gap-3"
-                style={{
-                  opacity:   skipped ? 0.35 : 1,
-                  animation: `stepReveal 0.2s ease ${i * 0.04}s both`,
-                }}>
-
-                {/* Status icon */}
-                <span className="w-4 h-4 flex items-center justify-center shrink-0">
-                  {skipped ? (
-                    <svg viewBox="0 0 14 14" className="w-3 h-3">
-                      <circle cx="7" cy="7" r="6"
-                        fill="none" stroke="#334155" strokeWidth="1" />
-                      <path d="M4 7h6" stroke="#334155" strokeWidth="1.2"
-                        strokeLinecap="round" />
-                    </svg>
-                  ) : (
-                    <svg viewBox="0 0 14 14" className="w-3.5 h-3.5">
-                      <circle cx="7" cy="7" r="6"
-                        fill={`${meta.color}18`}
-                        stroke={`${meta.color}60`} strokeWidth="1" />
-                      <path d="M4 7l2 2 4-4"
-                        stroke={meta.color} strokeWidth="1.4"
-                        strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </span>
-
-                {/* Step label */}
-                <span className="text-[11px] text-slate-400 flex-1">
-                  {step.label}
-                </span>
-
-                {/* Detail */}
-                {step.detail && (
-                  <span
-                    className="text-[10px] font-mono px-1.5 py-0.5 rounded truncate max-w-[180px]"
-                    style={{
-                      color:      skipped ? "#475569" : meta.color,
-                      background: skipped ? "transparent" : `${meta.color}12`,
-                    }}>
-                    {step.detail}
-                  </span>
-                )}
-
-                {/* Latency */}
-                {step.ms > 0 && (
-                  <span className="text-[10px] text-slate-700 font-mono shrink-0 w-10 text-right">
-                    {step.ms}ms
-                  </span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
+    <>
       <style>{`
-        @keyframes stepReveal {
-          from { opacity: 0; transform: translateX(-6px); }
+        @keyframes pipelineFadeIn {
+          from { opacity: 0; transform: translateX(-5px); }
           to   { opacity: 1; transform: translateX(0);    }
         }
+        @keyframes checkDraw {
+          from { stroke-dashoffset: 20; opacity: 0; }
+          to   { stroke-dashoffset: 0;  opacity: 1; }
+        }
+        @keyframes activeGlow {
+          0%,100% { opacity: 0.7; }
+          50%     { opacity: 1;   }
+        }
       `}</style>
-    </div>
+
+      <div
+        className="rounded-xl border overflow-hidden transition-all duration-300"
+        style={{
+          background:     "rgba(15,23,42,0.8)",
+          borderColor:    "rgba(99,102,241,0.15)",
+          backdropFilter: "blur(8px)",
+        }}>
+
+        {/* Header */}
+        <button
+          onClick={() => setExpanded(v => !v)}
+          className="w-full flex items-center gap-2.5 px-4 py-2.5
+            hover:bg-white/[0.02] transition-colors">
+
+          <span className="text-[11px] text-indigo-400 font-medium tracking-wide">
+            ⚙ AI Processing Pipeline
+          </span>
+
+          <div className="flex items-center gap-1.5 ml-1">
+            {routingStep && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded font-mono
+                bg-orange-950/60 border border-orange-800/40 text-orange-400">
+                {routingStep.detail.split(" · ")[0]}
+              </span>
+            )}
+            {ragStep?.status === "done" && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded font-mono
+                bg-indigo-950/60 border border-indigo-800/40 text-indigo-400">
+                RAG
+              </span>
+            )}
+            {memStep?.detail && memStep.detail !== "no prior context" && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded font-mono
+                bg-purple-950/60 border border-purple-800/40 text-purple-400">
+                mem
+              </span>
+            )}
+          </div>
+
+          <span className="ml-auto text-slate-600 text-xs">
+            {expanded ? "▲" : "▼"}
+          </span>
+        </button>
+
+        {/* Steps */}
+        {expanded && (
+          <div className="px-4 pb-3 space-y-1.5 border-t border-slate-800/50 pt-2.5">
+            {pipeline.map((step, i) => {
+              const meta     = PIPELINE_COLORS[step.id] || { icon: "•", color: "#94a3b8" };
+              const skipped  = step.status === "skipped";
+              const revealed = i < revealedCount;
+              const isActive = i === activeIndex;
+              const pending  = !revealed && !isActive;
+
+              return (
+                <div
+                  key={step.id}
+                  className="flex items-center gap-3 transition-opacity duration-200"
+                  style={{
+                    opacity:   pending ? 0 : skipped ? 0.3 : 1,
+                    animation: revealed
+                      ? `pipelineFadeIn 0.22s ease both`
+                      : undefined,
+                  }}>
+
+                  {/* Status icon */}
+                  <span className="w-4 h-4 flex items-center justify-center shrink-0">
+
+                    {/* Revealed + not skipped → checkmark */}
+                    {revealed && !skipped && (
+                      <svg viewBox="0 0 14 14" className="w-3.5 h-3.5">
+                        <circle
+                          cx="7" cy="7" r="6"
+                          fill={`${meta.color}18`}
+                          stroke={`${meta.color}55`}
+                          strokeWidth="1"
+                        />
+                        <path
+                          d="M4 7l2 2 4-4"
+                          fill="none"
+                          stroke={meta.color}
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeDasharray="20"
+                          strokeDashoffset="0"
+                          style={{ animation: "checkDraw 0.25s ease both" }}
+                        />
+                      </svg>
+                    )}
+
+                    {/* Active → pulsing dot with glow */}
+                    {isActive && (
+                      <svg viewBox="0 0 14 14" className="w-3.5 h-3.5">
+                        <circle
+                          cx="7" cy="7" r="6"
+                          fill={`${meta.color}15`}
+                          stroke={`${meta.color}70`}
+                          strokeWidth="1"
+                          style={{ animation: "activeGlow 0.9s ease-in-out infinite" }}
+                        />
+                        <circle
+                          cx="7" cy="7" r="2.5"
+                          fill={meta.color}
+                          style={{ animation: "activeGlow 0.9s ease-in-out infinite" }}
+                        />
+                      </svg>
+                    )}
+
+                    {/* Skipped → dash circle */}
+                    {skipped && (
+                      <svg viewBox="0 0 14 14" className="w-3.5 h-3.5">
+                        <circle
+                          cx="7" cy="7" r="6"
+                          fill="none"
+                          stroke="#334155"
+                          strokeWidth="1"
+                        />
+                        <path
+                          d="M4.5 7h5"
+                          stroke="#334155"
+                          strokeWidth="1.2"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    )}
+
+                    {/* Pending → invisible placeholder keeps layout stable */}
+                    {pending && (
+                      <svg viewBox="0 0 14 14" className="w-3.5 h-3.5 opacity-0">
+                        <circle cx="7" cy="7" r="6" />
+                      </svg>
+                    )}
+                  </span>
+
+                  {/* Label */}
+                  <span
+                    className="text-[11px] flex-1 transition-colors duration-200"
+                    style={{
+                      color: isActive
+                        ? "#e2e8f0"
+                        : revealed
+                          ? "#64748b"
+                          : "#334155",
+                      fontWeight: isActive ? "500" : "400",
+                    }}>
+                    {step.label}
+                  </span>
+
+                  {/* Detail pill */}
+                  {step.detail && (revealed || isActive) && (
+                    <span
+                      className="text-[10px] font-mono px-1.5 py-0.5 rounded
+                        truncate max-w-[180px] transition-all duration-200"
+                      style={{
+                        color:      skipped ? "#475569" : meta.color,
+                        background: skipped ? "transparent" : `${meta.color}12`,
+                        boxShadow:  isActive
+                          ? `0 0 8px ${meta.color}30`
+                          : undefined,
+                      }}>
+                      {step.detail}
+                    </span>
+                  )}
+
+                  {/* Latency */}
+                  {step.ms > 0 && revealed && (
+                    <span className="text-[10px] text-slate-700 font-mono
+                      shrink-0 w-10 text-right"
+                      style={{ animation: "pipelineFadeIn 0.3s ease both" }}>
+                      {step.ms}ms
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 export default function App() {
