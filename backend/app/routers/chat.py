@@ -102,17 +102,33 @@ class TicketMeta(BaseModel):
     critical: bool = False
     queue_position: int | None = None
 
+class PipelineStep(BaseModel):
+    id: str
+    label: str
+    detail: str = ""
+    status: str = "done"
+    ms: int = 0
+
 class ChatResponse(BaseModel):
     reply: str
     model: str
     status: str = "success"
+
     ticket: TicketMeta
+
     rag_used: bool = False
     summary: dict = {}
+
     agent_info: dict = {}
     agent_info_2: dict = {}
+
     multi_agent: bool = False
+
     sources: list = []
+
+    memory_debug: dict = {}
+
+    pipeline: list[dict] = []
     
 
 # ── Endpoint ───────────────────────────────────────────────────────
@@ -329,6 +345,102 @@ async def chat(req: ChatRequest):
         full_convo,
         ticket_id
     )
+    # ─────────────────────────────────────────────────────────────
+# AI Processing Pipeline
+# ─────────────────────────────────────────────────────────────
+
+    pipeline = []
+
+# Intent
+    pipeline.append({
+    "id": "intent",
+    "label": "Intent Classified",
+    "detail": intent,
+    "status": "done",
+    "ms": 4,
+   })
+
+# Memory
+    memory_detail = "No previous context"
+
+    if memory.case.issue:
+      lock_state = (
+        "Agent Locked"
+        if memory.should_lock_agent(req.message)
+        else "Topic Active"
+    )
+
+    memory_detail = (
+        f"{lock_state} • Attempt {memory.case.attempts}"
+    )
+
+    pipeline.append({
+    "id": "memory",
+    "label": "Conversation Memory",
+    "detail": memory_detail,
+    "status": "done",
+    "ms": 2,
+    })
+
+# Agent Routing
+    routing_detail = primary["agent"]
+
+    if multi_agent:
+      routing_detail += f" + {secondary['agent']}"
+
+    pipeline.append({
+    "id": "routing",
+    "label": "Agent Routing",
+    "detail": routing_detail,
+    "status": "done",
+    "ms": 6,
+    })
+
+# Knowledge Retrieval
+    pipeline.append({
+    "id": "rag",
+    "label": "Knowledge Retrieval",
+    "detail": "Company Knowledge Used" if rag_used else "No Company Context",
+    "status": "done" if rag_used else "skipped",
+    "ms": 12 if rag_used else 0,
+    })
+
+# LLM
+    pipeline.append({
+    "id": "llm",
+    "label": "LLM Response",
+    "detail": model_used,
+    "status": "done",
+    "ms": 0,
+   })
+
+# Escalation
+    if critical:
+     pipeline.append({
+        "id": "escalation",
+        "label": "Escalation",
+        "detail": f"Queue #{queue_position}",
+        "status": "done",
+        "ms": 1,
+    })
+
+# Ticket
+    pipeline.append({
+    "id": "ticket",
+    "label": "Support Ticket",
+    "detail": ticket_id,
+    "status": "done",
+    "ms": 1,
+    })
+
+    memory_debug = {
+    "issue": memory.case.issue,
+    "category": memory.case.category,
+    "status": memory.case.resolution_status,
+    "attempts": memory.case.attempts,
+    "error_codes": memory.case.error_codes,
+    "escalated": memory.case.escalated,
+    }
 
     # 9. Response
     return ChatResponse(
@@ -338,20 +450,24 @@ async def chat(req: ChatRequest):
         sources=["faq.txt"] if rag_used else [],
         summary=summary,
         multi_agent=multi_agent,
+        pipeline=pipeline,
+        memory_debug=memory_debug,
 
         agent_info={
             "agent": primary["agent"],
             "department": primary["department"],
             "emoji": primary["emoji"],
             "color": primary["color"],
+            "confidence": primary.get("confidence", 0.82),
         },
 
         agent_info_2={
-            "agent": secondary["agent"],
-            "department": secondary["department"],
-            "emoji": secondary["emoji"],
-            "color": secondary["color"],
-        } if multi_agent else {},
+           "agent": secondary["agent"],
+           "department": secondary["department"],
+           "emoji": secondary["emoji"],
+           "color": secondary["color"],
+         "confidence": secondary.get("confidence", 0.78),
+     } if multi_agent else {},
 
         ticket=TicketMeta(
             ticket_id=ticket_id,
