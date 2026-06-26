@@ -448,11 +448,17 @@ function ChatMessage({ msg }) {
 
       <div className={`flex flex-col gap-0.5 ${isUser ? "items-end" : "items-start"} max-w-[80%]`}>
         {!isUser && (
-  <AgentBadge
-    agentInfo={msg.agentInfo}
-    agentInfo2={msg.agentInfo2}
-    multiAgent={msg.multiAgent}
-  />
+  msg.multiAgent && msg.agentInfo2
+    ? <MultiAgentCollaboration
+        agentInfo={msg.agentInfo}
+        agentInfo2={msg.agentInfo2}
+        multiAgent={msg.multiAgent}
+      />
+    : <AgentBadge
+        agentInfo={msg.agentInfo}
+        agentInfo2={msg.agentInfo2}
+        multiAgent={msg.multiAgent}
+      />
 )}
 {!isUser && <AIMetricsCard msg={msg} />}
 
@@ -1343,6 +1349,263 @@ function AIMetricsCard({ msg }) {
         </div>
       ))}
     </div>
+  );
+}
+// ── Multi-Agent Collaboration Visualization ────────────────────────────────
+
+const AGENT_THEME = {
+  orange: { color: "#fb923c", bg: "rgba(251,146,60,0.10)",  border: "rgba(251,146,60,0.25)", glow: "rgba(251,146,60,0.15)" },
+  blue:   { color: "#60a5fa", bg: "rgba(96,165,250,0.10)",  border: "rgba(96,165,250,0.25)", glow: "rgba(96,165,250,0.15)" },
+  green:  { color: "#34d399", bg: "rgba(52,211,153,0.10)",  border: "rgba(52,211,153,0.25)", glow: "rgba(52,211,153,0.15)" },
+  purple: { color: "#c084fc", bg: "rgba(192,132,252,0.10)", border: "rgba(192,132,252,0.25)", glow: "rgba(192,132,252,0.15)" },
+  slate:  { color: "#94a3b8", bg: "rgba(148,163,184,0.10)", border: "rgba(148,163,184,0.20)", glow: "rgba(148,163,184,0.10)" },
+};
+
+function AgentNode({ agentInfo, side = "left", visible }) {
+  const theme = AGENT_THEME[agentInfo?.color] || AGENT_THEME.slate;
+
+  return (
+    <div
+      className="flex flex-col items-center gap-1.5 transition-all duration-500"
+      style={{
+        opacity:   visible ? 1 : 0,
+        transform: visible
+          ? "translateY(0)"
+          : side === "left" ? "translateY(-8px)" : "translateY(-8px)",
+      }}>
+
+      {/* Agent avatar */}
+      <div
+        className="w-10 h-10 rounded-xl flex items-center justify-center text-lg relative"
+        style={{
+          background: theme.bg,
+          border:     `1px solid ${theme.border}`,
+          boxShadow:  `0 0 16px ${theme.glow}`,
+        }}>
+        <span className="relative z-10">{agentInfo?.emoji}</span>
+        {/* Pulse ring */}
+        <span
+          className="absolute inset-0 rounded-xl"
+          style={{
+            border:    `1px solid ${theme.color}`,
+            opacity:   0.4,
+            animation: "agentPulse 2.6s ease-in-out infinite",
+          }}
+        />
+      </div>
+
+      {/* Agent label */}
+      <div className="text-center">
+        <p
+          className="text-[10px] font-semibold leading-tight"
+          style={{ color: theme.color }}>
+          {agentInfo?.agent?.replace(" AI", "")}
+        </p>
+        <p className="text-[9px] text-slate-600 leading-tight">
+          {agentInfo?.department}
+        </p>
+      </div>
+
+      {/* Confidence chip */}
+      {agentInfo?.confidence && (
+        <span
+          className="text-[9px] font-mono px-1.5 py-0.5 rounded"
+          style={{
+            color:      theme.color,
+            background: theme.bg,
+            border:     `1px solid ${theme.border}`,
+          }}>
+          {Math.round(agentInfo.confidence * 100)}%
+        </span>
+      )}
+    </div>
+  );
+}
+
+function ConnectorArrow({ visible, primaryColor, secondaryColor }) {
+  return (
+    <svg
+      width="120" height="48"
+      viewBox="0 0 120 48"
+      className="shrink-0"
+      style={{ overflow: "visible" }}>
+
+      {/* Left line — from primary agent down */}
+      <line
+        x1="20" y1="0"
+        x2="20" y2="20"
+        stroke={primaryColor}
+        strokeWidth="1"
+        strokeDasharray="4 3"
+        style={{
+          opacity:   visible ? 0.5 : 0,
+          transition: "opacity 0.4s ease 0.15s",
+        }}
+      />
+
+      {/* Right line — from secondary agent down */}
+      <line
+        x1="100" y1="0"
+        x2="100" y2="20"
+        stroke={secondaryColor}
+        strokeWidth="1"
+        strokeDasharray="4 3"
+        style={{
+          opacity:   visible ? 0.5 : 0,
+          transition: "opacity 0.4s ease 0.2s",
+        }}
+      />
+
+      {/* Horizontal merge line */}
+      <line
+        x1="20" y1="20"
+        x2="100" y2="20"
+        stroke="rgba(99,102,241,0.35)"
+        strokeWidth="1"
+        style={{
+          opacity:           visible ? 1 : 0,
+          strokeDasharray:   "80",
+          strokeDashoffset:  visible ? "0" : "80",
+          transition:        "stroke-dashoffset 0.45s ease 0.3s, opacity 0.3s ease 0.3s",
+        }}
+      />
+
+      {/* Center merge node */}
+      <circle
+        cx="60" cy="20"
+        r="3"
+        fill="#6366f1"
+        style={{
+          opacity:   visible ? 0.9 : 0,
+          transform: visible ? "scale(1)" : "scale(0)",
+          transformOrigin: "60px 20px",
+          transition: "opacity 0.3s ease 0.55s, transform 0.3s ease 0.55s",
+        }}
+      />
+
+      {/* Arrow down to unified response */}
+      <line
+        x1="60" y1="22"
+        x2="60" y2="40"
+        stroke="#6366f1"
+        strokeWidth="1.5"
+        style={{
+          opacity:           visible ? 0.7 : 0,
+          strokeDasharray:   "20",
+          strokeDashoffset:  visible ? "0" : "20",
+          transition:        "stroke-dashoffset 0.3s ease 0.65s, opacity 0.3s ease 0.65s",
+        }}
+      />
+
+      {/* Arrowhead */}
+      <path
+        d="M55 37 L60 44 L65 37"
+        fill="none"
+        stroke="#6366f1"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{
+          opacity:   visible ? 0.7 : 0,
+          transition: "opacity 0.25s ease 0.8s",
+        }}
+      />
+    </svg>
+  );
+}
+
+function MultiAgentCollaboration({ agentInfo, agentInfo2, multiAgent }) {
+  const [phase, setPhase] = useState(0);
+  // phase 0 = hidden, 1 = agents visible, 2 = connector drawn, 3 = unified label shown
+
+  useEffect(() => {
+    if (!multiAgent || !agentInfo2) return;
+
+    const t1 = setTimeout(() => setPhase(1), 80);   // agents appear
+    const t2 = setTimeout(() => setPhase(2), 340);   // connector draws
+    const t3 = setTimeout(() => setPhase(3), 900);   // unified label fades in
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [multiAgent, agentInfo2]);
+
+  // Single agent — render nothing (AgentBadge handles it)
+  if (!multiAgent || !agentInfo2) return null;
+
+  const primaryTheme   = AGENT_THEME[agentInfo?.color]  || AGENT_THEME.slate;
+  const secondaryTheme = AGENT_THEME[agentInfo2?.color] || AGENT_THEME.slate;
+
+  return (
+    <>
+      <style>{`
+        @keyframes agentPulse {
+          0%, 100% { opacity: 0.4; transform: scale(1);    }
+          50%       { opacity: 0.1; transform: scale(1.12); }
+        }
+        @keyframes unifiedFadeIn {
+          from { opacity: 0; transform: translateY(4px); }
+          to   { opacity: 1; transform: translateY(0);   }
+        }
+      `}</style>
+
+      <div
+        className="rounded-xl px-4 py-3.5"
+        style={{
+          background: "rgba(15,23,42,0.65)",
+          border:     "1px solid rgba(99,102,241,0.12)",
+          backdropFilter: "blur(8px)",
+        }}>
+
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-3">
+          <span
+            className="text-[10px] font-semibold tracking-wider uppercase"
+            style={{ color: "#a5b4fc" }}>
+            🤝 Multi-Agent Collaboration
+          </span>
+          {/* Live dot while animating */}
+          {phase < 3 && (
+            <span
+              className="w-1.5 h-1.5 rounded-full bg-indigo-500 ml-auto"
+              style={{ animation: "agentPulse 1s ease-in-out infinite" }}
+            />
+          )}
+        </div>
+
+        {/* Collaboration layout */}
+        <div className="flex flex-col items-center gap-0">
+
+          {/* Agents row */}
+          <div className="flex items-start justify-between w-full px-2">
+            <AgentNode agentInfo={agentInfo}  side="left"  visible={phase >= 1} />
+            <AgentNode agentInfo={agentInfo2} side="right" visible={phase >= 1} />
+          </div>
+
+          {/* SVG connector */}
+          <ConnectorArrow
+            visible={phase >= 2}
+            primaryColor={primaryTheme.color}
+            secondaryColor={secondaryTheme.color}
+          />
+
+          {/* Unified response label */}
+          <div
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+            style={{
+              background: "rgba(99,102,241,0.1)",
+              border:     "1px solid rgba(99,102,241,0.2)",
+              opacity:    phase >= 3 ? 1 : 0,
+              animation:  phase >= 3 ? "unifiedFadeIn 0.35s ease both" : "none",
+            }}>
+            <span className="text-[10px] text-indigo-300 font-medium">
+              Unified Response
+            </span>
+            <span
+              className="w-1.5 h-1.5 rounded-full bg-emerald-400"
+              style={{ boxShadow: "0 0 6px rgba(52,211,153,0.6)" }}
+            />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
