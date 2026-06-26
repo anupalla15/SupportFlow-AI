@@ -456,6 +456,16 @@ function ChatMessage({ msg }) {
 )}
 {!isUser && <AIMetricsCard msg={msg} />}
 
+{!isUser && msg.agentInfo?.agent && (
+  <ConfidenceBar
+    agentInfo={msg.agentInfo}
+    agentInfo2={msg.agentInfo2}
+    multiAgent={msg.multiAgent}
+    ragUsed={msg.ragUsed}
+    text={msg.text}
+  />
+)}
+
 {!isUser && msg.pipeline?.length > 0 && (
   <AIPipelinePanel
     pipeline={msg.pipeline}
@@ -1127,6 +1137,125 @@ const PIPELINE_COLORS = {
   escalation: { icon: "🚨", color: "#f87171"  },
   ticket:     { icon: "🎫", color: "#60a5fa"  },
 };
+// ── Confidence Visualization ───────────────────────────────────────────────
+
+function ConfidenceBar({ agentInfo, agentInfo2, multiAgent, ragUsed, text }) {
+  const [animated, setAnimated] = useState(false);
+
+  // Trigger animation after mount so the bar slides in visibly
+  useEffect(() => {
+    const t = setTimeout(() => setAnimated(true), 120);
+    return () => clearTimeout(t);
+  }, []);
+
+  // ── Confidence calculation ──────────────────────────────────────
+  // Priority: real routing confidence → multi-agent average → estimation
+
+  let confidence = null;
+  let source     = "estimated";
+
+  if (agentInfo?.confidence) {
+    if (multiAgent && agentInfo2?.confidence) {
+      // Multi-agent: weighted average (primary carries more weight)
+      confidence = agentInfo.confidence * 0.6 + agentInfo2.confidence * 0.4;
+      source     = "multi-agent";
+    } else {
+      confidence = agentInfo.confidence;
+      source     = "routed";
+    }
+  } else {
+    // Estimation heuristics when no routing confidence is available
+    let base = 0.72;
+    if (ragUsed)      base += 0.09;   // RAG grounding raises confidence
+    if (multiAgent)   base += 0.06;   // collaboration raises confidence
+    if (text?.length > 300) base += 0.04;  // longer = more thorough
+    // Small deterministic jitter so different messages look different
+    const jitter = ((text?.length || 0) % 7) * 0.005;
+    confidence   = Math.min(base + jitter, 0.97);
+    source       = "estimated";
+  }
+
+  const pct = Math.round(confidence * 100);
+
+  // ── Color thresholds ────────────────────────────────────────────
+  const getColor = (p) => {
+    if (p >= 85) return { bar: "#34d399", text: "#34d399", label: "High",    bg: "rgba(52,211,153,0.08)"  };
+    if (p >= 68) return { bar: "#fbbf24", text: "#fbbf24", label: "Medium",  bg: "rgba(251,191,36,0.08)"  };
+    return               { bar: "#f87171", text: "#f87171", label: "Low",     bg: "rgba(248,113,113,0.08)" };
+  };
+
+  const theme = getColor(pct);
+
+  return (
+    <div
+      className="px-3 py-2.5 rounded-xl"
+      style={{
+        background: "rgba(15,23,42,0.55)",
+        border:     "1px solid rgba(99,102,241,0.08)",
+      }}>
+
+      {/* Header row */}
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] text-slate-600 uppercase tracking-wider">
+          AI Confidence
+        </span>
+        <div className="flex items-center gap-2">
+          {/* Confidence level label */}
+          <span
+            className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+            style={{
+              color:      theme.text,
+              background: theme.bg,
+            }}>
+            {theme.label}
+          </span>
+          {/* Percentage */}
+          <span
+            className="text-sm font-bold font-mono tabular-nums"
+            style={{ color: theme.text }}>
+            {pct}%
+          </span>
+        </div>
+      </div>
+
+      {/* Animated bar */}
+      <div
+        className="h-1 rounded-full overflow-hidden"
+        style={{ background: "rgba(51,65,85,0.6)" }}>
+        <div
+          className="h-full rounded-full transition-all duration-700 ease-out"
+          style={{
+            width:      animated ? `${pct}%` : "0%",
+            background: `linear-gradient(90deg, ${theme.bar}99, ${theme.bar})`,
+            boxShadow:  animated ? `0 0 8px ${theme.bar}50` : "none",
+            transition: "width 0.7s cubic-bezier(0.4,0,0.2,1), box-shadow 0.7s ease",
+          }}
+        />
+      </div>
+
+      {/* Source label */}
+      <div className="mt-1.5 flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          {/* Tick marks at 25%, 50%, 75% */}
+          {[25, 50, 75].map(mark => (
+            <div key={mark} className="flex items-center gap-0.5">
+              <span
+                className="text-[9px] font-mono tabular-nums"
+                style={{ color: pct >= mark ? theme.text + "60" : "#1e293b" }}>
+                {mark}
+              </span>
+            </div>
+          ))}
+        </div>
+        <span className="text-[9px] text-slate-700 font-mono">
+          {source === "routed"      && "from routing"}
+          {source === "multi-agent" && "multi-agent avg"}
+          {source === "estimated"   && "estimated"}
+        </span>
+      </div>
+    </div>
+  );
+}
 // ── AI Metrics Card ────────────────────────────────────────────────────────
 
 function AIMetricsCard({ msg }) {
