@@ -479,6 +479,15 @@ function ChatMessage({ msg }) {
   />
 )}
 
+{/* ← ADD: execution timeline below pipeline */}
+{!isUser && msg.agentInfo?.agent && (
+  <AIExecutionTimeline
+    pipeline={msg.pipeline || []}
+    streaming={msg.streaming || false}
+    ragUsed={msg.ragUsed}
+  />
+)}
+
 <div
   className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line
     ${isUser
@@ -1564,6 +1573,381 @@ function resolveSource(raw) {
     icon:     meta?.icon     || "📄",
     category: meta?.category || "Document",
   };
+}
+
+// ── AI Execution Timeline ──────────────────────────────────────────────────
+
+const TIMELINE_STEPS = [
+  {
+    id:       "intent",
+    label:    "Intent Classification",
+    icon:     "🎯",
+    color:    "#a5b4fc",
+    baseDuration: 4,
+  },
+  {
+    id:       "memory",
+    label:    "Conversation Memory",
+    icon:     "🧠",
+    color:    "#c084fc",
+    baseDuration: 2,
+  },
+  {
+    id:       "routing",
+    label:    "Agent Routing",
+    icon:     "⚡",
+    color:    "#fb923c",
+    baseDuration: 8,
+  },
+  {
+    id:       "rag",
+    label:    "Knowledge Retrieval",
+    icon:     "📄",
+    color:    "#6366f1",
+    baseDuration: 18,
+  },
+  {
+    id:       "llm",
+    label:    "LLM Generation",
+    icon:     "🤖",
+    color:    "#34d399",
+    baseDuration: 0,   // duration unknown — shown as "streaming"
+  },
+  {
+    id:       "ticket",
+    label:    "Ticket Creation",
+    icon:     "🎫",
+    color:    "#60a5fa",
+    baseDuration: 1,
+  },
+];
+
+// Build timeline entries by enriching TIMELINE_STEPS with pipeline data
+function buildTimelineEntries(pipeline, streaming) {
+  // Index pipeline steps by id for quick lookup
+  const pipelineMap = {};
+  (pipeline || []).forEach(s => { pipelineMap[s.id] = s; });
+
+  // Accumulate timestamps from a fixed start offset
+  let cursorMs = 0;
+  const startBase = Date.now() - 1200;  // ~1.2s ago — stable reference
+
+  return TIMELINE_STEPS.map((step, i) => {
+    const pStep   = pipelineMap[step.id];
+    const durMs   = pStep?.ms ?? step.baseDuration;
+    const skipped = pStep?.status === "skipped";
+
+    // LLM step is "active" while streaming, done when streaming ends
+    const isLlm   = step.id === "llm";
+    const done    = skipped
+      ? false
+      : isLlm
+        ? !streaming
+        : i < TIMELINE_STEPS.length;  // all non-LLM steps complete instantly
+
+    const tsMs    = startBase + cursorMs;
+    cursorMs     += durMs + 6;  // 6ms gap between steps
+
+    return {
+      ...step,
+      duration: skipped ? null : durMs,
+      skipped,
+      done,
+      active:    isLlm && streaming,
+      timestamp: new Date(tsMs).toLocaleTimeString([], {
+        hour:   "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }),
+      detail: pStep?.detail || null,
+    };
+  });
+}
+
+function TimelineStep({ entry, index, visible }) {
+  const isLast = index === TIMELINE_STEPS.length - 1;
+
+  return (
+    <div
+      className="flex gap-3"
+      style={{
+        opacity:   visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(6px)",
+        transition: `opacity 0.28s ease ${index * 0.07}s,
+                     transform 0.28s ease ${index * 0.07}s`,
+      }}>
+
+      {/* Spine column */}
+      <div className="flex flex-col items-center" style={{ width: "20px" }}>
+        {/* Node */}
+        <div
+          className="w-5 h-5 rounded-full flex items-center justify-center
+            shrink-0 relative z-10"
+          style={{
+            background: entry.skipped
+              ? "rgba(30,41,59,0.8)"
+              : entry.active
+                ? `${entry.color}20`
+                : entry.done
+                  ? `${entry.color}18`
+                  : "rgba(30,41,59,0.8)",
+            border: entry.skipped
+              ? "1px solid #1e293b"
+              : entry.active
+                ? `1px solid ${entry.color}`
+                : entry.done
+                  ? `1px solid ${entry.color}55`
+                  : "1px solid #334155",
+            boxShadow: entry.active
+              ? `0 0 10px ${entry.color}40`
+              : undefined,
+            animation: entry.active
+              ? "tlNodePulse 1.4s ease-in-out infinite"
+              : undefined,
+          }}>
+
+          {/* Icon / status indicator */}
+          {entry.skipped && (
+            <span className="text-[8px] text-slate-700">—</span>
+          )}
+          {entry.active && (
+            <span
+              className="w-2 h-2 rounded-full"
+              style={{
+                background: entry.color,
+                animation:  "tlNodePulse 0.9s ease-in-out infinite",
+              }}
+            />
+          )}
+          {entry.done && !entry.skipped && (
+            <svg viewBox="0 0 12 12" className="w-3 h-3">
+              <path
+                d="M2.5 6l2.5 2.5 4.5-5"
+                fill="none"
+                stroke={entry.color}
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeDasharray="12"
+                strokeDashoffset="0"
+                style={{ animation: "tlCheckDraw 0.3s ease both" }}
+              />
+            </svg>
+          )}
+          {!entry.done && !entry.active && !entry.skipped && (
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ background: "#334155" }}
+            />
+          )}
+        </div>
+
+        {/* Vertical connector */}
+        {!isLast && (
+          <div
+            className="flex-1 w-px mt-0.5"
+            style={{
+              background: entry.done || entry.active
+                ? `linear-gradient(to bottom, ${entry.color}30, rgba(51,65,85,0.2))`
+                : "rgba(30,41,59,0.8)",
+              minHeight: "20px",
+            }}
+          />
+        )}
+      </div>
+
+      {/* Content column */}
+      <div
+        className="flex-1 pb-3 min-w-0"
+        style={{ paddingTop: "1px" }}>
+
+        <div className="flex items-start justify-between gap-2">
+          {/* Left: icon + label + detail */}
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span
+              className="text-xs shrink-0"
+              style={{ opacity: entry.skipped ? 0.3 : 1 }}>
+              {entry.icon}
+            </span>
+            <span
+              className="text-[11px] font-medium truncate"
+              style={{
+                color: entry.skipped
+                  ? "#334155"
+                  : entry.active
+                    ? "#e2e8f0"
+                    : entry.done
+                      ? "#94a3b8"
+                      : "#475569",
+              }}>
+              {entry.label}
+            </span>
+            {/* Detail chip */}
+            {entry.detail && (entry.done || entry.active) && !entry.skipped && (
+              <span
+                className="text-[9px] font-mono px-1 py-0.5 rounded shrink-0
+                  hidden sm:inline-block"
+                style={{
+                  color:      entry.color,
+                  background: `${entry.color}10`,
+                }}>
+                {entry.detail}
+              </span>
+            )}
+          </div>
+
+          {/* Right: timestamp + duration */}
+          <div className="flex items-center gap-2 shrink-0 text-right">
+            {entry.active && (
+              <span
+                className="text-[9px] font-mono"
+                style={{ color: entry.color }}>
+                streaming…
+              </span>
+            )}
+            {entry.done && !entry.skipped && entry.duration > 0 && (
+              <span className="text-[9px] font-mono text-slate-700">
+                {entry.duration}ms
+              </span>
+            )}
+            {entry.skipped && (
+              <span className="text-[9px] font-mono text-slate-800">
+                skipped
+              </span>
+            )}
+            {(entry.done || entry.active) && !entry.skipped && (
+              <span className="text-[9px] font-mono text-slate-700">
+                {entry.timestamp}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Active streaming progress bar */}
+        {entry.active && (
+          <div
+            className="mt-1.5 h-0.5 rounded-full overflow-hidden"
+            style={{ background: "rgba(51,65,85,0.4)" }}>
+            <div
+              className="h-full rounded-full"
+              style={{
+                background: `linear-gradient(90deg, ${entry.color}60, ${entry.color})`,
+                animation:  "tlStreamBar 1.8s ease-in-out infinite",
+              }}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AIExecutionTimeline({ pipeline, streaming, ragUsed }) {
+  const [visible, setVisible] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 60);
+    return () => clearTimeout(t);
+  }, []);
+
+  const entries = buildTimelineEntries(pipeline, streaming);
+  const doneCount = entries.filter(e => e.done && !e.skipped).length;
+  const totalMs   = entries.reduce((s, e) => s + (e.duration || 0), 0);
+
+  return (
+    <>
+      <style>{`
+        @keyframes tlCheckDraw {
+          from { stroke-dashoffset: 12; opacity: 0; }
+          to   { stroke-dashoffset: 0;  opacity: 1; }
+        }
+        @keyframes tlNodePulse {
+          0%,100% { opacity: 0.7; }
+          50%     { opacity: 1;   }
+        }
+        @keyframes tlStreamBar {
+          0%   { width: 0%;    margin-left: 0%;   }
+          50%  { width: 40%;   margin-left: 30%;  }
+          100% { width: 0%;    margin-left: 100%; }
+        }
+      `}</style>
+
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{
+          background:  "rgba(15,23,42,0.62)",
+          border:      "1px solid rgba(99,102,241,0.11)",
+          backdropFilter: "blur(8px)",
+        }}>
+
+        {/* Header */}
+        <button
+          onClick={() => setExpanded(v => !v)}
+          className="w-full flex items-center gap-2 px-3 py-2.5
+            hover:bg-white/[0.02] transition-colors">
+
+          <span className="text-[10px] text-indigo-400 font-medium tracking-wide">
+            🕐 Execution Timeline
+          </span>
+
+          {/* Progress pill */}
+          <span
+            className="text-[9px] font-mono px-1.5 py-0.5 rounded"
+            style={{
+              color:      "#a5b4fc",
+              background: "rgba(99,102,241,0.1)",
+              border:     "1px solid rgba(99,102,241,0.18)",
+            }}>
+            {doneCount}/{entries.filter(e => !e.skipped).length} steps
+          </span>
+
+          {/* Total duration */}
+          {!streaming && totalMs > 0 && (
+            <span className="text-[9px] font-mono text-slate-700">
+              {totalMs}ms total
+            </span>
+          )}
+
+          {/* Streaming indicator */}
+          {streaming && (
+            <span
+              className="text-[9px] text-indigo-400 font-mono"
+              style={{ animation: "tlNodePulse 1.2s ease-in-out infinite" }}>
+              live
+            </span>
+          )}
+
+          <span
+            className="ml-auto text-slate-700 text-[10px] transition-transform duration-300"
+            style={{ display: "inline-block",
+                     transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}>
+            ▼
+          </span>
+        </button>
+
+        {/* Timeline body */}
+        <div
+          style={{
+            maxHeight:  expanded ? "520px" : "0px",
+            overflow:   "hidden",
+            transition: "max-height 0.38s cubic-bezier(0.4,0,0.2,1)",
+          }}>
+          <div className="px-3 pt-2 pb-1 border-t border-slate-800/50">
+            {entries.map((entry, i) => (
+              <TimelineStep
+                key={entry.id}
+                entry={entry}
+                index={i}
+                visible={visible}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
 
 function RAGSourcesPanel({ sources }) {
