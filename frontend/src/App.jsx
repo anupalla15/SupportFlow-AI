@@ -462,16 +462,6 @@ function ChatMessage({ msg }) {
 )}
 {!isUser && <AIMetricsCard msg={msg} />}
 
-{!isUser && msg.agentInfo?.agent && (
-  <ConfidenceBar
-    agentInfo={msg.agentInfo}
-    agentInfo2={msg.agentInfo2}
-    multiAgent={msg.multiAgent}
-    ragUsed={msg.ragUsed}
-    text={msg.text}
-  />
-)}
-
 {!isUser && msg.pipeline?.length > 0 && (
   <AIPipelinePanel
     pipeline={msg.pipeline}
@@ -545,58 +535,149 @@ function TabBtn({ active, onClick, children }) {
 }
 
 // ── Login Screen ───────────────────────────────────────────────────────────
-
 function LoginScreen({ onLogin }) {
   const [email, setEmail]         = useState("");
   const [password, setPassword]   = useState("");
   const [error, setError]         = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
+  const [selected, setSelected]   = useState(null); // "user" | "admin"
 
-  function handleLogin(role) {
+  function handleLogin() {
     if (!email.trim() || !password.trim()) {
       setError("Please enter your email and password.");
       return;
     }
+    if (!selected) {
+      setError("Select your access level to continue.");
+      return;
+    }
     setError("");
     setLoggingIn(true);
-    setTimeout(() => { setLoggingIn(false); onLogin(role); }, 500);
+    setTimeout(() => { setLoggingIn(false); onLogin(selected); }, 500);
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
       style={{ background: "radial-gradient(ellipse at 60% 10%, #1e1b4b 0%, #0f172a 45%, #020617 100%)" }}>
 
+      {/* Grid */}
       <div className="absolute inset-0 pointer-events-none opacity-30"
         style={{
           backgroundImage: "linear-gradient(rgba(99,102,241,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.06) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
         }} />
-
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
         style={{ background: "radial-gradient(ellipse, rgba(99,102,241,0.15) 0%, transparent 70%)" }} />
 
-      <div className="relative z-10 w-full max-w-sm">
+      <div className="relative z-10 w-full max-w-md">
+
+        {/* Brand */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-2xl shadow-2xl shadow-indigo-900/60 mb-4">
-            ⚡
-          </div>
+          <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center
+            justify-center text-2xl shadow-2xl shadow-indigo-900/60 mb-4">⚡</div>
           <h1 className="text-white font-bold text-xl tracking-tight">SupportFlow AI</h1>
-          <p className="text-slate-500 text-xs mt-1 tracking-wide">
-            Enterprise Support Platform · Powered by FlowZint
-          </p>
+          <p className="text-slate-400 text-sm mt-2">
+             Enterprise AI Support Platform
+            </p>
+          <p className="text-slate-600 text-xs mt-1">
+              Customer Portal • Operations Center • Powered by FlowZint
+            </p>
+            <div className="grid grid-cols-2 gap-3 mt-8 max-w-md mx-auto">
+
+  <div className="rounded-xl bg-slate-900/70 border border-slate-800 p-3">
+    <div className="text-2xl font-bold text-indigo-400">
+      12,481
+    </div>
+    <div className="text-xs text-slate-500">
+      AI Requests Today
+    </div>
+  </div>
+
+  <div className="rounded-xl bg-slate-900/70 border border-slate-800 p-3">
+    <div className="text-2xl font-bold text-emerald-400">
+      0.9s
+    </div>
+    <div className="text-xs text-slate-500">
+      Avg Response
+    </div>
+  </div>
+
+  <div className="rounded-xl bg-slate-900/70 border border-slate-800 p-3">
+    <div className="text-2xl font-bold text-cyan-400">
+      96%
+    </div>
+    <div className="text-xs text-slate-500">
+      Resolution Rate
+    </div>
+  </div>
+
+  <div className="rounded-xl bg-slate-900/70 border border-slate-800 p-3">
+    <div className="text-2xl font-bold text-orange-400">
+      18
+    </div>
+    <div className="text-xs text-slate-500">
+      Active Engineers
+    </div>
+  </div>
+
+</div>
+            
         </div>
 
-        <div className="rounded-2xl p-7 border border-white/[0.07]"
+        {/* Portal selector */}
+        <div className="grid grid-cols-2 gap-3 mb-5">
+          {[
+            {
+              key:     "user",
+              icon:    "👤",
+              title:   "AI Support Portal",
+              desc:    "Submit and track support requests",
+              border:  "rgba(99,102,241,0.5)",
+              glow:    "rgba(99,102,241,0.15)",
+            },
+            {
+              key:     "admin",
+              icon:    "⚙",
+              title:   "Enterprise Operations Center",
+              desc:    "Monitor AI , Resolve escalations , Manage support tickets",
+              border:  "rgba(251,146,60,0.5)",
+              glow:    "rgba(251,146,60,0.12)",
+            },
+          ].map(p => (
+            <button
+              key={p.key}
+              onClick={() => setSelected(p.key)}
+              className="text-left p-4 rounded-2xl transition-all duration-200"
+              style={{
+                background: selected === p.key ? `${p.glow}` : "rgba(15,23,42,0.7)",
+                border: selected === p.key
+                  ? `1px solid ${p.border}`
+                  : "1px solid rgba(51,65,85,0.5)",
+                boxShadow: selected === p.key
+                  ? `0 0 20px ${p.glow}`
+                  : "none",
+              }}>
+              <div className="text-2xl mb-2">{p.icon}</div>
+              <p className="text-white text-sm font-semibold mb-0.5">{p.title}</p>
+              <p className="text-slate-500 text-[11px] leading-snug">{p.desc}</p>
+              {selected === p.key && (
+                <div className="mt-2 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                  <span className="text-[10px] text-indigo-400">Selected</span>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Credentials */}
+        <div className="rounded-2xl p-6 border border-white/[0.07] mb-4"
           style={{
-            background: "rgba(15, 23, 42, 0.85)",
+            background:     "rgba(15,23,42,0.85)",
             backdropFilter: "blur(24px)",
-            boxShadow: "0 32px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)",
+            boxShadow:      "0 32px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)",
           }}>
-
-          <h2 className="text-white font-semibold text-base mb-0.5">Sign in</h2>
-          <p className="text-slate-500 text-xs mb-5">Access your enterprise workspace</p>
-
-          <div className="space-y-3 mb-5">
+          <div className="space-y-3">
             <div>
               <label className="text-slate-500 text-[10px] uppercase tracking-widest block mb-1.5">
                 Work Email
@@ -605,7 +686,7 @@ function LoginScreen({ onLogin }) {
                 placeholder="you@company.com"
                 className="w-full bg-slate-800/70 border border-slate-700/80 text-slate-200
                   placeholder-slate-600 rounded-xl px-4 py-2.5 text-sm focus:outline-none
-                  focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40 transition-all duration-200" />
+                  focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40 transition-all" />
             </div>
             <div>
               <label className="text-slate-500 text-[10px] uppercase tracking-widest block mb-1.5">
@@ -613,38 +694,46 @@ function LoginScreen({ onLogin }) {
               </label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
-                onKeyDown={e => e.key === "Enter" && handleLogin("user")}
+                onKeyDown={e => e.key === "Enter" && handleLogin()}
                 className="w-full bg-slate-800/70 border border-slate-700/80 text-slate-200
                   placeholder-slate-600 rounded-xl px-4 py-2.5 text-sm focus:outline-none
-                  focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40 transition-all duration-200" />
+                  focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40 transition-all" />
             </div>
           </div>
 
           {error && (
-            <div className="bg-red-950/50 border border-red-800/50 rounded-lg px-3 py-2 mb-4">
+            <div className="mt-3 bg-red-950/50 border border-red-800/50 rounded-lg px-3 py-2">
               <p className="text-red-400 text-xs">{error}</p>
             </div>
           )}
 
-          <div className="space-y-2">
-            <button onClick={() => handleLogin("user")} disabled={loggingIn}
-              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60
-                text-white font-medium text-sm rounded-xl py-2.5 transition-all duration-200
-                shadow-lg shadow-indigo-900/40 hover:shadow-indigo-900/60">
-              {loggingIn ? "Signing in…" : "Login as User"}
-            </button>
-            <button onClick={() => handleLogin("admin")} disabled={loggingIn}
-              className="w-full bg-slate-800 hover:bg-slate-700 disabled:opacity-60
-                border border-slate-700 hover:border-slate-600
-                text-slate-300 font-medium text-sm rounded-xl py-2.5 transition-all duration-200">
-              Login as Admin
-            </button>
-          </div>
-
-          <p className="text-slate-700 text-[10px] text-center mt-5">
-            Demo build — any credentials accepted
-          </p>
+          <button onClick={handleLogin} disabled={loggingIn || !selected}
+            className="w-full mt-4 font-medium text-sm rounded-xl py-2.5
+              transition-all duration-200 disabled:opacity-40"
+            style={{
+              background: selected === "admin"
+                ? "linear-gradient(135deg, #ea580c, #dc2626)"
+                : "linear-gradient(135deg, #4f46e5, #6366f1)",
+              color:      "#fff",
+              boxShadow:  selected
+                ? selected === "admin"
+                  ? "0 4px 20px rgba(234,88,12,0.35)"
+                  : "0 4px 20px rgba(99,102,241,0.35)"
+                : "none",
+            }}>
+            {loggingIn
+              ? "Signing in…"
+              : selected === "admin"
+                ? "Access Enterprise Operations Center"
+                : selected === "user"
+                  ? "Open AI Support Portal"
+                  : "Choose AI Support Portal or Choose Operations Center"}
+          </button>
         </div>
+
+        <p className="text-slate-700 text-[10px] text-center">
+          Demo build · any credentials accepted
+        </p>
       </div>
     </div>
   );
@@ -2406,6 +2495,1728 @@ function AIPipelinePanel({ pipeline, visible }) {
     </>
   );
 }
+// ── Enterprise Analytics Dashboard ────────────────────────────────────────
+// Reads entirely from existing ticketLog and summaries state.
+// No new props, no backend changes.
+
+// ── Sparkline (reuse or define if not already in file) ────────────────────
+// If you already have Sparkline defined, remove this duplicate.
+function AnalyticsSparkline({ values = [], color = "#6366f1", height = 36 }) {
+  if (values.length < 2) {
+    return (
+      <div className="text-[10px] text-slate-700 text-center py-2">
+        No trend data yet
+      </div>
+    );
+  }
+  const w = 200, h = height, pad = 3;
+  const max = Math.max(...values, 1);
+  const min = Math.min(...values, 0);
+  const range = max - min || 1;
+  const pts = values.map((v, i) => {
+    const x = pad + (i / (values.length - 1)) * (w - pad * 2);
+    const y = h - pad - ((v - min) / range) * (h - pad * 2);
+    return `${x},${y}`;
+  }).join(" ");
+  const fillPts = `${pad},${h} ${pts} ${w - pad},${h}`;
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id={`sg-${color.replace("#","")}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor={color} stopOpacity="0.18" />
+          <stop offset="100%" stopColor={color} stopOpacity="0"    />
+        </linearGradient>
+      </defs>
+      <polyline points={fillPts} fill={`url(#sg-${color.replace("#","")})`} stroke="none" />
+      <polyline points={pts} fill="none" stroke={color}
+        strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ── Donut (reuse or define if not already in file) ────────────────────────
+function AnalyticsDonut({ data, size = 80 }) {
+  const total = data.reduce((s, d) => s + d.value, 0) || 1;
+  const r = size * 0.38, cx = size / 2, cy = size / 2;
+  const stroke = size * 0.14;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+  const slices = data.map(d => {
+    const dash = (d.value / total) * circ;
+    const s = { ...d, dash, gap: circ - dash, offset };
+    offset += dash;
+    return s;
+  });
+  return (
+    <svg width={size} height={size} className="-rotate-90">
+      <circle cx={cx} cy={cy} r={r} fill="none"
+        stroke="#1e293b" strokeWidth={stroke} />
+      {slices.map(s => (
+        <circle key={s.label} cx={cx} cy={cy} r={r} fill="none"
+          stroke={s.color} strokeWidth={stroke}
+          strokeDasharray={`${s.dash} ${s.gap}`}
+          strokeDashoffset={-s.offset}
+          strokeLinecap="butt" />
+      ))}
+    </svg>
+  );
+}
+
+// ── Horizontal bar ─────────────────────────────────────────────────────────
+function HBar({ label, value, max, color, suffix = "" }) {
+  const pct = max > 0 ? Math.round((value / max) * 100) : 0;
+  return (
+    <div>
+      <div className="flex justify-between text-[11px] mb-1">
+        <span className="text-slate-400">{label}</span>
+        <span className="font-medium" style={{ color }}>
+          {value}{suffix}
+        </span>
+      </div>
+      <div className="h-1.5 rounded-full overflow-hidden"
+        style={{ background: "rgba(51,65,85,0.5)" }}>
+        <div
+          className="h-full rounded-full transition-all duration-700"
+          style={{ width: `${pct}%`, background: color }} />
+      </div>
+    </div>
+  );
+}
+
+// ── KPI card ───────────────────────────────────────────────────────────────
+function KPICard({ label, value, sub, accent, icon, trend, trendValues }) {
+  const [hovered, setHovered] = useState(false);
+  const trendUp = trend > 0;
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="rounded-2xl p-5 flex flex-col gap-2 cursor-default
+        transition-all duration-300"
+      style={{
+        background:  "rgba(15,23,42,0.8)",
+        border:      hovered
+          ? "1px solid rgba(99,102,241,0.28)"
+          : "1px solid rgba(51,65,85,0.5)",
+        transform:   hovered ? "translateY(-2px)" : "translateY(0)",
+        boxShadow:   hovered
+          ? "0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(99,102,241,0.1)"
+          : "0 2px 8px rgba(0,0,0,0.2)",
+      }}>
+      <div className="flex items-start justify-between">
+        <span className="text-[10px] text-slate-500 uppercase tracking-widest font-medium">
+          {label}
+        </span>
+        <span className="text-lg">{icon}</span>
+      </div>
+      <div className={`text-3xl font-bold tabular-nums ${accent}`}>{value}</div>
+      {trendValues?.length > 1 && (
+        <div className="h-7">
+          <AnalyticsSparkline
+            values={trendValues}
+            color={accent.includes("emerald") ? "#34d399"
+                 : accent.includes("red")     ? "#f87171"
+                 : accent.includes("orange")  ? "#fb923c"
+                 :                              "#6366f1"}
+            height={28}
+          />
+        </div>
+      )}
+      <div className="flex items-center justify-between mt-0.5">
+        {sub && (
+          <span className="text-[10px] text-slate-600">{sub}</span>
+        )}
+        {trend !== undefined && (
+          <span
+            className="text-[10px] font-mono"
+            style={{ color: trendUp ? "#34d399" : "#f87171" }}>
+            {trendUp ? "▲" : "▼"} {Math.abs(trend)}%
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Section wrapper ────────────────────────────────────────────────────────
+function DashSection({ title, children, badge }) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <h2 className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">
+          {title}
+        </h2>
+        {badge && (
+          <span className="text-[9px] bg-indigo-950 border border-indigo-800
+            text-indigo-400 px-1.5 py-0.5 rounded-full font-mono">
+            {badge}
+          </span>
+        )}
+        <div className="flex-1 h-px bg-slate-800/60 ml-1" />
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Main dashboard ─────────────────────────────────────────────────────────
+function EnterpriseAnalyticsDashboard({
+  ticketLog,
+  summaries,
+  escalationQueue,
+  trendPoints,
+}) {
+  // ── Derived metrics ──────────────────────────────────────────
+  const total      = ticketLog.length;
+  const escalated  = ticketLog.filter(t => t.escalate).length;
+  const critical   = ticketLog.filter(t => t.critical).length;
+  const ragHits    = ticketLog.filter(t => t.ragUsed).length;
+  const multiAgent = ticketLog.filter(t => t.multiAgent).length;
+  const resolved   = summaries.filter(s => s.resolution_status === "Resolved").length;
+
+  const escRate    = total ? Math.round((escalated / total) * 100) : 0;
+  const ragRate    = total ? Math.round((ragHits   / total) * 100) : 0;
+  const aiResRate  = total ? Math.round(((total - escalated) / total) * 100) : 0;
+
+  // Sentiment breakdown
+  const sentiment = { angry: 0, frustrated: 0, neutral: 0, positive: 0 };
+  ticketLog.forEach(t => {
+    if (sentiment[t.sentiment] !== undefined) sentiment[t.sentiment]++;
+  });
+
+  // Priority breakdown
+  const priority = { critical: 0, high: 0, medium: 0, low: 0 };
+  ticketLog.forEach(t => {
+    if (priority[t.priority] !== undefined) priority[t.priority]++;
+  });
+
+  // Agent usage — count by agent name from ticket log
+  const agentUsage = {};
+  ticketLog.forEach(t => {
+    const name = t.agent ?? "Enterprise Support AI";
+    agentUsage[name] = (agentUsage[name] || 0) + 1;
+  });
+  const agentRows = Object.entries(agentUsage)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5);
+  const maxAgentCount = Math.max(...agentRows.map(([, v]) => v), 1);
+
+  // Simulated latency values (based on ticket timing heuristic)
+  const latencyValues = ticketLog.map((_, i) =>
+    380 + Math.sin(i * 0.8) * 120 + Math.random() * 80
+  );
+  const avgLatency = latencyValues.length
+    ? Math.round(latencyValues.reduce((a, b) => a + b, 0) / latencyValues.length)
+    : 0;
+
+  // Escalation trend — rolling 10 tickets
+  const escTrend = ticketLog
+    .slice(-10)
+    .map(t => t.escalate ? 1 : 0);
+
+  // Empty state
+  if (total === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <div className="text-4xl mb-3">📊</div>
+        <h3 className="text-white font-semibold mb-1">No operational data yet</h3>
+        <p className="text-slate-500 text-sm">
+          Send messages in Support Chat to populate the analytics center.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+
+      {/* ── KPI row ─────────────────────────────────────────────── */}
+      <DashSection title="Enterprise Operations Center" badge={`${total} tickets`}>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <KPICard
+            label="Total Incidents"
+            value={total}
+            sub="This session"
+            accent="text-white"
+            icon="🎫"
+            trendValues={ticketLog.map((_, i) => i + 1)}
+          />
+          <KPICard
+            label="AI Resolution"
+            value={`${aiResRate}%`}
+            sub={`${total - escalated} auto-resolved`}
+            accent="text-emerald-400"
+            icon="✅"
+            trend={aiResRate > 80 ? 4 : -3}
+            trendValues={trendPoints}
+          />
+          <KPICard
+            label="Escalation Rate"
+            value={`${escRate}%`}
+            sub={`${escalated} escalated`}
+            accent={escRate > 25 ? "text-red-400" : "text-orange-400"}
+            icon="⚡"
+            trend={escRate > 25 ? 8 : -2}
+            trendValues={escTrend}
+          />
+          <KPICard
+            label="RAG Hit Rate"
+            value={`${ragRate}%`}
+            sub={`${ragHits} KB-assisted`}
+            accent="text-indigo-400"
+            icon="📚"
+            trendValues={ticketLog.map(t => t.ragUsed ? 1 : 0)}
+          />
+        </div>
+      </DashSection>
+
+      {/* ── Secondary KPI row ───────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {[
+          { label: "Critical Cases",  value: critical,   color: "text-red-400",    icon: "🚨" },
+          { label: "Multi-Agent",     value: multiAgent, color: "text-indigo-400", icon: "🤝" },
+          { label: "Resolved",        value: resolved,   color: "text-emerald-400",icon: "✅" },
+          { label: "Queue Waiting",   value: escalationQueue.length,
+                                             color: escalationQueue.length > 0
+                                               ? "text-red-400" : "text-slate-400",
+                                             icon: "🚨" },
+        ].map(s => (
+          <div key={s.label}
+            className="rounded-2xl p-4 flex items-center gap-3"
+            style={{
+              background: "rgba(15,23,42,0.7)",
+              border:     "1px solid rgba(51,65,85,0.45)",
+            }}>
+            <span className="text-2xl">{s.icon}</span>
+            <div>
+              <div className={`text-xl font-bold tabular-nums ${s.color}`}>
+                {s.value}
+              </div>
+              <div className="text-[10px] text-slate-600">{s.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Charts row ──────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        {/* Sentiment donut */}
+        <div className="rounded-2xl p-5"
+          style={{
+            background: "rgba(15,23,42,0.75)",
+            border:     "1px solid rgba(51,65,85,0.45)",
+          }}>
+          <h3 className="text-white font-semibold text-sm mb-4">
+            Sentiment Distribution
+          </h3>
+          <div className="flex items-center gap-4">
+            <AnalyticsDonut
+              data={[
+                { label: "Angry",      value: sentiment.angry,      color: "#f87171" },
+                { label: "Frustrated", value: sentiment.frustrated,  color: "#fb923c" },
+                { label: "Neutral",    value: sentiment.neutral,     color: "#94a3b8" },
+                { label: "Positive",   value: sentiment.positive,    color: "#34d399" },
+              ]}
+              size={80}
+            />
+            <div className="space-y-1.5 flex-1">
+              {[
+                { label: "Angry",      value: sentiment.angry,     color: "#f87171" },
+                { label: "Frustrated", value: sentiment.frustrated, color: "#fb923c" },
+                { label: "Neutral",    value: sentiment.neutral,    color: "#94a3b8" },
+                { label: "Positive",   value: sentiment.positive,   color: "#34d399" },
+              ].map(d => (
+                <div key={d.label}
+                  className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full shrink-0"
+                      style={{ background: d.color }} />
+                    <span className="text-[11px] text-slate-400">{d.label}</span>
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 tabular-nums">
+                    {total > 0
+                      ? `${Math.round((d.value / total) * 100)}%`
+                      : "—"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Priority breakdown */}
+        <div className="rounded-2xl p-5"
+          style={{
+            background: "rgba(15,23,42,0.75)",
+            border:     "1px solid rgba(51,65,85,0.45)",
+          }}>
+          <h3 className="text-white font-semibold text-sm mb-4">
+            Priority Breakdown
+          </h3>
+          <div className="space-y-3">
+            {[
+              { label: "Critical", value: priority.critical, color: "#f87171" },
+              { label: "High",     value: priority.high,     color: "#fb923c" },
+              { label: "Medium",   value: priority.medium,   color: "#94a3b8" },
+              { label: "Low",      value: priority.low,      color: "#34d399" },
+            ].map(d => (
+              <HBar
+                key={d.label}
+                label={d.label}
+                value={d.value}
+                max={total}
+                color={d.color}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Escalation trend sparkline */}
+        <div className="rounded-2xl p-5"
+          style={{
+            background: "rgba(15,23,42,0.75)",
+            border:     "1px solid rgba(51,65,85,0.45)",
+          }}>
+          <h3 className="text-white font-semibold text-sm mb-1">
+            Escalation Trend
+          </h3>
+          <p className="text-[10px] text-slate-600 mb-4">
+            Last {trendPoints.length} interactions
+          </p>
+          <AnalyticsSparkline values={trendPoints} color="#f87171" height={40} />
+          <div className="mt-3 flex items-center justify-between text-[11px]">
+            <span className="text-slate-600">Escalations over time</span>
+            <span className="text-red-400 font-medium tabular-nums">
+              {escalated} total
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Agent usage + latency ────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        {/* Agent usage */}
+        <div className="rounded-2xl p-5"
+          style={{
+            background: "rgba(15,23,42,0.75)",
+            border:     "1px solid rgba(51,65,85,0.45)",
+          }}>
+          <h3 className="text-white font-semibold text-sm mb-4">
+            Agent Usage
+          </h3>
+          {agentRows.length === 0 ? (
+            <p className="text-slate-600 text-xs">No agent data yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {agentRows.map(([name, count]) => {
+                const color =
+                  name.includes("Workflow") ? "#fb923c" :
+                  name.includes("Billing")  ? "#60a5fa" :
+                  name.includes("API")      ? "#34d399" :
+                  name.includes("Access")   ? "#c084fc" : "#94a3b8";
+                return (
+                  <HBar
+                    key={name}
+                    label={name.replace(" AI", "")}
+                    value={count}
+                    max={maxAgentCount}
+                    color={color}
+                    suffix=" tickets"
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Response latency */}
+        <div className="rounded-2xl p-5"
+          style={{
+            background: "rgba(15,23,42,0.75)",
+            border:     "1px solid rgba(51,65,85,0.45)",
+          }}>
+          <h3 className="text-white font-semibold text-sm mb-1">
+            Response Latency
+          </h3>
+          <p className="text-[10px] text-slate-600 mb-3">Simulated — ms per response</p>
+          <div className="flex items-end gap-3 mb-3">
+            <span className="text-2xl font-bold text-indigo-400 tabular-nums">
+              {avgLatency}ms
+            </span>
+            <span className="text-[10px] text-slate-600 mb-1">avg</span>
+          </div>
+          <AnalyticsSparkline values={latencyValues} color="#6366f1" height={44} />
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {[
+              { label: "Min", value: latencyValues.length
+                  ? `${Math.round(Math.min(...latencyValues))}ms` : "—",
+                color: "#34d399" },
+              { label: "Avg", value: avgLatency ? `${avgLatency}ms` : "—",
+                color: "#6366f1" },
+              { label: "Max", value: latencyValues.length
+                  ? `${Math.round(Math.max(...latencyValues))}ms` : "—",
+                color: "#f87171" },
+            ].map(s => (
+              <div key={s.label}
+                className="rounded-xl px-2.5 py-2 text-center"
+                style={{
+                  background: "rgba(30,41,59,0.5)",
+                  border:     "1px solid rgba(51,65,85,0.4)",
+                }}>
+                <div className="text-[10px] text-slate-600 mb-0.5">{s.label}</div>
+                <div className="text-xs font-mono font-semibold"
+                  style={{ color: s.color }}>
+                  {s.value}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── RAG + multi-agent ────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        {/* RAG hit rate */}
+        <div className="rounded-2xl p-5"
+          style={{
+            background: "rgba(15,23,42,0.75)",
+            border:     "1px solid rgba(51,65,85,0.45)",
+          }}>
+          <h3 className="text-white font-semibold text-sm mb-4">
+            RAG Hit Rate
+          </h3>
+          <div className="flex items-center gap-4 mb-4">
+            <AnalyticsDonut
+              data={[
+                { label: "KB Hit",  value: ragHits,         color: "#6366f1" },
+                { label: "General", value: total - ragHits, color: "#1e293b" },
+              ]}
+              size={72}
+            />
+            <div>
+              <div className="text-2xl font-bold text-indigo-400 tabular-nums mb-0.5">
+                {ragRate}%
+              </div>
+              <div className="text-[10px] text-slate-600">
+                {ragHits} of {total} queries used KB
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { label: "KB Assisted",   value: ragHits,         color: "#6366f1" },
+              { label: "General AI",    value: total - ragHits, color: "#475569" },
+            ].map(s => (
+              <div key={s.label}
+                className="rounded-xl px-3 py-2.5 text-center"
+                style={{
+                  background: "rgba(30,41,59,0.5)",
+                  border:     "1px solid rgba(51,65,85,0.4)",
+                }}>
+                <div className="text-[10px] text-slate-600 mb-0.5">{s.label}</div>
+                <div className="text-base font-bold tabular-nums"
+                  style={{ color: s.color }}>
+                  {s.value}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Multi-agent collaboration */}
+        <div className="rounded-2xl p-5"
+          style={{
+            background: "rgba(15,23,42,0.75)",
+            border:     "1px solid rgba(51,65,85,0.45)",
+          }}>
+          <h3 className="text-white font-semibold text-sm mb-4">
+            Multi-Agent Collaboration
+          </h3>
+          <div className="flex items-center gap-4 mb-4">
+            <AnalyticsDonut
+              data={[
+                { label: "Multi-Agent", value: multiAgent,         color: "#a5b4fc" },
+                { label: "Single",      value: total - multiAgent, color: "#1e293b" },
+              ]}
+              size={72}
+            />
+            <div>
+              <div className="text-2xl font-bold text-indigo-300 tabular-nums mb-0.5">
+                {total > 0 ? Math.round((multiAgent / total) * 100) : 0}%
+              </div>
+              <div className="text-[10px] text-slate-600">
+                {multiAgent} multi-agent responses
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { label: "Multi-Agent", value: multiAgent,         color: "#a5b4fc" },
+              { label: "Single Agent", value: total - multiAgent, color: "#475569" },
+            ].map(s => (
+              <div key={s.label}
+                className="rounded-xl px-3 py-2.5 text-center"
+                style={{
+                  background: "rgba(30,41,59,0.5)",
+                  border:     "1px solid rgba(51,65,85,0.4)",
+                }}>
+                <div className="text-[10px] text-slate-600 mb-0.5">{s.label}</div>
+                <div className="text-base font-bold tabular-nums"
+                  style={{ color: s.color }}>
+                  {s.value}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Live activity feed ───────────────────────────────────── */}
+      <DashSection title="Operational Activity Stream">
+        <div className="rounded-2xl overflow-hidden"
+          style={{
+            background: "rgba(15,23,42,0.75)",
+            border:     "1px solid rgba(51,65,85,0.45)",
+          }}>
+          <div className="flex items-center justify-between px-5 py-3.5
+            border-b border-slate-800/50">
+            <span className="text-white font-semibold text-sm">Recent Tickets</span>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+              <span className="text-emerald-400 text-[11px]">Live</span>
+            </div>
+          </div>
+          <div className="max-h-64 overflow-y-auto">
+            {[...ticketLog].reverse().map(t => {
+              const sentCfg = SENTIMENT_CONFIG[t.sentiment] || SENTIMENT_CONFIG.neutral;
+              return (
+                <div key={t.ticket_id}
+                  className="flex items-start gap-3 px-5 py-3
+                    border-b border-slate-800/40 last:border-0
+                    hover:bg-white/[0.015] transition-colors">
+                  <span className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${sentCfg.dot}`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <span className="text-[11px] font-mono text-indigo-400">
+                        {t.ticket_id}
+                      </span>
+                      {t.critical && (
+                        <span className="text-[9px] bg-red-900 text-red-300
+                          border border-red-700 px-1.5 py-0.5 rounded font-bold">
+                          CRITICAL
+                        </span>
+                      )}
+                      {t.escalate && !t.critical && (
+                        <span className="text-[9px] bg-orange-900 text-orange-300
+                          border border-orange-700 px-1.5 py-0.5 rounded">
+                          ESC
+                        </span>
+                      )}
+                      {t.multiAgent && (
+                        <span className="text-[9px] text-indigo-400">🤝</span>
+                      )}
+                      {t.ragUsed && (
+                        <span className="text-[9px] text-indigo-400">📚</span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-400 truncate">
+                      {t.message}
+                    </p>
+                    <span className="text-[10px] text-slate-700">{t.time}</span>
+                  </div>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded shrink-0
+                    ${PRIORITY_BADGE[t.priority]}`}>
+                    {t.priority}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </DashSection>
+
+    </div>
+  );
+}
+// ── SLA timer hook ─────────────────────────────────────────────────────────
+
+function useSLATimer(createdTime, slaMinutes) {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    // Parse createdTime string like "02:34 PM" into a Date offset from now
+    const now        = Date.now();
+    const slaMs      = slaMinutes * 60 * 1000;
+    const startMs    = now - (elapsed * 1000);
+
+    const timer = setInterval(() => {
+      setElapsed(s => s + 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const slaMs      = slaMinutes * 60;
+  const remaining  = Math.max(slaMs - elapsed, 0);
+  const breached   = remaining === 0;
+  const pct        = Math.min((elapsed / slaMs) * 100, 100);
+
+  const fmt = (secs) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
+
+  return { remaining, breached, pct, display: fmt(remaining) };
+}
+
+// ── SLA bar ────────────────────────────────────────────────────────────────
+
+function SLATimer({ createdTime, slaMinutes, compact = false }) {
+  const { remaining, breached, pct, display } = useSLATimer(createdTime, slaMinutes);
+
+  const color = pct < 50 ? "#34d399"
+              : pct < 80 ? "#fbbf24"
+              :             "#f87171";
+
+  if (compact) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <span
+          className="text-[11px] font-mono tabular-nums"
+          style={{ color: breached ? "#f87171" : color }}>
+          {breached ? "BREACHED" : display}
+        </span>
+        <div className="w-12 h-1 rounded-full overflow-hidden bg-slate-800">
+          <div
+            className="h-full rounded-full transition-all duration-1000"
+            style={{ width: `${pct}%`, background: color }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[10px] text-slate-600 uppercase tracking-wider">SLA</span>
+        <span
+          className="text-xs font-mono font-semibold tabular-nums"
+          style={{ color: breached ? "#f87171" : color }}>
+          {breached ? "BREACHED" : display}
+        </span>
+      </div>
+      <div className="h-1.5 rounded-full overflow-hidden bg-slate-800">
+        <div
+          className="h-full rounded-full transition-all duration-1000"
+          style={{
+            width:     `${pct}%`,
+            background: color,
+            boxShadow:  `0 0 6px ${color}60`,
+          }}
+        />
+      </div>
+      {breached && (
+        <p className="text-[9px] text-red-400 mt-1">SLA target exceeded</p>
+      )}
+    </div>
+  );
+}
+
+// ── Status badge ───────────────────────────────────────────────────────────
+
+const TICKET_STATUS = {
+  "New":         { color: "#60a5fa", bg: "rgba(96,165,250,0.1)",   border: "rgba(96,165,250,0.25)"  },
+  "Assigned":    { color: "#fbbf24", bg: "rgba(251,191,36,0.1)",   border: "rgba(251,191,36,0.25)"  },
+  "In Progress": { color: "#a5b4fc", bg: "rgba(165,180,252,0.1)",  border: "rgba(165,180,252,0.25)" },
+  "Pending":     { color: "#fb923c", bg: "rgba(251,146,60,0.1)",   border: "rgba(251,146,60,0.25)"  },
+  "Resolved":    { color: "#34d399", bg: "rgba(52,211,153,0.1)",   border: "rgba(52,211,153,0.25)"  },
+  "Escalated":   { color: "#f87171", bg: "rgba(248,113,113,0.1)",  border: "rgba(248,113,113,0.25)" },
+};
+
+const ENGINEERS = [
+  { id: "E1", name: "Arjun S.",   avatar: "AS", color: "#6366f1" },
+  { id: "E2", name: "Priya M.",   avatar: "PM", color: "#34d399" },
+  { id: "E3", name: "Rahul K.",   avatar: "RK", color: "#fb923c" },
+  { id: "E4", name: "Divya R.",   avatar: "DR", color: "#c084fc" },
+  { id: "E5", name: "Unassigned", avatar: "—",  color: "#475569" },
+];
+
+// Deterministic engineer assignment based on ticket_id
+function assignEngineer(ticket_id) {
+  const idx = parseInt(ticket_id?.replace(/\D/g, "") || "0") % 4;
+  return ENGINEERS[idx];
+}
+
+// SLA minutes by priority
+const SLA_MINUTES = {
+  critical: 15,
+  high:     60,
+  medium:   240,
+  low:      480,
+};
+
+function StatusBadge({ status }) {
+  const cfg = TICKET_STATUS[status] || TICKET_STATUS["New"];
+  return (
+    <span
+      className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+      style={{
+        color:      cfg.color,
+        background: cfg.bg,
+        border:     `1px solid ${cfg.border}`,
+      }}>
+      {status}
+    </span>
+  );
+}
+
+// ── Engineer avatar ────────────────────────────────────────────────────────
+
+function EngineerAvatar({ engineer, size = "sm" }) {
+  const dim = size === "sm" ? "w-6 h-6 text-[9px]" : "w-8 h-8 text-[11px]";
+  return (
+    <div
+      className={`${dim} rounded-full flex items-center justify-center
+        font-bold shrink-0`}
+      style={{
+        background: `${engineer.color}22`,
+        border:     `1px solid ${engineer.color}55`,
+        color:      engineer.color,
+      }}>
+      {engineer.avatar}
+    </div>
+  );
+}
+
+// ── Ticket row (queue table) ───────────────────────────────────────────────
+
+function TicketRow({ ticket, index }) {
+  const [expanded, setExpanded] = useState(false);
+  const engineer   = assignEngineer(ticket.ticket_id);
+  const slaMinutes = SLA_MINUTES[ticket.priority] || 240;
+  const sentCfg    = SENTIMENT_CONFIG[ticket.sentiment] || SENTIMENT_CONFIG.neutral;
+
+  // Derive a status from ticket state
+  const status = ticket.critical   ? "Escalated"
+               : ticket.escalate   ? "In Progress"
+               : ticket.sentiment === "positive" ? "Resolved"
+               : index === 0       ? "In Progress"
+               : "Assigned";
+
+  return (
+    <>
+      <tr
+        className="border-b border-slate-800/50 hover:bg-white/[0.015]
+          transition-colors cursor-pointer"
+        onClick={() => setExpanded(v => !v)}>
+
+        {/* Position */}
+        <td className="px-4 py-3 text-center">
+          <span className="text-[11px] text-slate-600 font-mono">
+            #{index + 1}
+          </span>
+        </td>
+
+        {/* Ticket ID */}
+        <td className="px-4 py-3">
+          <span className="text-[11px] font-mono text-indigo-400 font-semibold">
+            {ticket.ticket_id}
+          </span>
+        </td>
+
+        {/* Message preview */}
+        <td className="px-4 py-3 max-w-[200px]">
+          <p className="text-[11px] text-slate-300 truncate">{ticket.message}</p>
+        </td>
+
+        {/* Priority */}
+        <td className="px-4 py-3">
+          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium
+            ${PRIORITY_BADGE[ticket.priority]}`}>
+            {ticket.priority}
+          </span>
+        </td>
+
+        {/* Status */}
+        <td className="px-4 py-3">
+          <StatusBadge status={status} />
+        </td>
+
+        {/* Assigned engineer */}
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-1.5">
+            <EngineerAvatar engineer={engineer} size="sm" />
+            <span className="text-[11px] text-slate-400">{engineer.name}</span>
+          </div>
+        </td>
+
+        {/* Sentiment */}
+        <td className="px-4 py-3">
+          <span className={`flex items-center gap-1 text-[10px] w-fit
+            px-2 py-0.5 rounded-full border ${sentCfg.bg} ${sentCfg.color}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${sentCfg.dot}`} />
+            {sentCfg.label}
+          </span>
+        </td>
+
+        {/* SLA */}
+        <td className="px-4 py-3 min-w-[120px]">
+          <SLATimer
+            createdTime={ticket.time}
+            slaMinutes={slaMinutes}
+            compact
+          />
+        </td>
+
+        {/* Expand chevron */}
+        <td className="px-4 py-3 text-center">
+          <span
+            className="text-slate-700 text-[10px] transition-transform duration-200
+              inline-block"
+            style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}>
+            ▼
+          </span>
+        </td>
+      </tr>
+
+      {/* Expanded detail row */}
+      {expanded && (
+        <tr className="border-b border-slate-800/30">
+          <td colSpan={9} className="px-4 pb-4 pt-0">
+            <div
+              className="rounded-xl p-4 mt-1"
+              style={{
+                background: "rgba(30,41,59,0.5)",
+                border:     "1px solid rgba(51,65,85,0.4)",
+              }}>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+                {/* SLA full */}
+                <div>
+                  <p className="text-[10px] text-slate-600 uppercase
+                    tracking-wider mb-2">SLA Progress</p>
+                  <SLATimer
+                    createdTime={ticket.time}
+                    slaMinutes={slaMinutes}
+                  />
+                  <p className="text-[10px] text-slate-600 mt-1.5">
+                    Target: {slaMinutes < 60
+                      ? `${slaMinutes}m`
+                      : `${slaMinutes / 60}h`}
+                  </p>
+                </div>
+
+                {/* Engineer detail */}
+                <div>
+                  <p className="text-[10px] text-slate-600 uppercase
+                    tracking-wider mb-2">Assigned Engineer</p>
+                  <div className="flex items-center gap-2">
+                    <EngineerAvatar engineer={engineer} size="lg" />
+                    <div>
+                      <p className="text-sm text-white font-medium">
+                        {engineer.name}
+                      </p>
+                      <p className="text-[10px] text-slate-600">
+                        FlowZint Operations Team
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div>
+                  <p className="text-[10px] text-slate-600 uppercase
+                    tracking-wider mb-2">Actions</p>
+                  <div className="flex flex-wrap gap-2">
+                    {["Reassign", "Escalate", "Resolve", "Add Note"].map(action => (
+                      <button
+                        key={action}
+                        onClick={e => e.stopPropagation()}
+                        className="text-[10px] px-2.5 py-1.5 rounded-lg
+                          transition-colors font-medium"
+                        style={{
+                          background: "rgba(51,65,85,0.5)",
+                          border:     "1px solid rgba(71,85,105,0.6)",
+                          color:      "#94a3b8",
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.background = "rgba(99,102,241,0.15)";
+                          e.currentTarget.style.borderColor = "rgba(99,102,241,0.4)";
+                          e.currentTarget.style.color = "#a5b4fc";
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.background = "rgba(51,65,85,0.5)";
+                          e.currentTarget.style.borderColor = "rgba(71,85,105,0.6)";
+                          e.currentTarget.style.color = "#94a3b8";
+                        }}>
+                        {action}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
+
+// ── Engineer workload card ─────────────────────────────────────────────────
+
+function EngineerCard({ engineer, tickets }) {
+  const assigned = tickets.filter(
+    (_, i) => assignEngineer(tickets[i]?.ticket_id)?.id === engineer.id
+  ).length;
+  const active   = Math.min(assigned, 3);
+
+  return (
+    <div
+      className="rounded-xl p-4"
+      style={{
+        background: "rgba(15,23,42,0.75)",
+        border:     "1px solid rgba(51,65,85,0.45)",
+      }}>
+      <div className="flex items-center gap-3 mb-3">
+        <EngineerAvatar engineer={engineer} size="lg" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-white font-medium">{engineer.name}</p>
+          <p className="text-[10px] text-slate-600">Operations Engineer</p>
+        </div>
+        {/* Online indicator */}
+        <span className="flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400
+            animate-pulse shrink-0" />
+          <span className="text-[9px] text-emerald-400">Online</span>
+        </span>
+      </div>
+
+      {/* Workload bar */}
+      <div className="mb-1.5">
+        <div className="flex justify-between text-[10px] mb-1">
+          <span className="text-slate-600">Workload</span>
+          <span style={{ color: engineer.color }}>{active} active</span>
+        </div>
+        <div className="h-1.5 rounded-full overflow-hidden bg-slate-800">
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{
+              width:      `${Math.min((active / 5) * 100, 100)}%`,
+              background: engineer.color,
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between mt-2">
+        <span className="text-[10px] text-slate-700">
+          {active === 0 ? "Available"
+         : active < 3  ? "Moderate"
+         :                "At capacity"}
+        </span>
+        <span className="text-[10px] font-mono"
+          style={{ color: engineer.color }}>
+          {active}/5 tickets
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ── Main dashboard component ───────────────────────────────────────────────
+
+function HumanSupportDashboard({ ticketLog, escalationQueue }) {
+  const [filter, setFilter]   = useState("all");
+  const [search, setSearch]   = useState("");
+  const [sortBy, setSortBy]   = useState("priority");
+
+  // Combine all tickets — regular + escalated
+  const allTickets = [
+    ...escalationQueue,
+    ...ticketLog.filter(t =>
+      !escalationQueue.find(e => e.ticket_id === t.ticket_id)
+    ),
+  ];
+
+  // Priority order for sorting
+  const PRIORITY_ORDER = { critical: 0, high: 1, medium: 2, low: 3 };
+
+  const filtered = allTickets
+    .filter(t => {
+      if (filter === "critical")  return t.critical;
+      if (filter === "escalated") return t.escalate;
+      if (filter === "open")      return !t.critical && t.sentiment !== "positive";
+      return true;
+    })
+    .filter(t =>
+      !search ||
+      t.ticket_id?.toLowerCase().includes(search.toLowerCase()) ||
+      t.message?.toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (sortBy === "priority")
+        return (PRIORITY_ORDER[a.priority] ?? 4) - (PRIORITY_ORDER[b.priority] ?? 4);
+      if (sortBy === "sentiment")
+        return (a.sentiment || "").localeCompare(b.sentiment || "");
+      return 0;
+    });
+
+  // Stats row
+  const stats = [
+    { label: "Total Open",  value: allTickets.length,                       color: "text-white",       icon: "🎫" },
+    { label: "Critical",    value: allTickets.filter(t => t.critical).length, color: "text-red-400",   icon: "🚨" },
+    { label: "In Queue",    value: escalationQueue.length,                   color: "text-orange-400",  icon: "⚡" },
+    { label: "Resolved",    value: ticketLog.filter(t =>
+                              t.sentiment === "positive").length,            color: "text-emerald-400", icon: "✅" },
+  ];
+
+  if (allTickets.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <div className="text-4xl mb-3">👥</div>
+        <h3 className="text-white font-semibold mb-1">No support tickets yet</h3>
+        <p className="text-slate-500 text-sm">
+          Tickets appear here as users submit support requests.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+
+      {/* ── Stats row ─────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {stats.map(s => (
+          <div
+            key={s.label}
+            className="rounded-2xl p-4 flex items-center gap-3"
+            style={{
+              background: "rgba(15,23,42,0.75)",
+              border:     "1px solid rgba(51,65,85,0.45)",
+            }}>
+            <span className="text-2xl">{s.icon}</span>
+            <div>
+              <div className={`text-2xl font-bold tabular-nums ${s.color}`}>
+                {s.value}
+              </div>
+              <div className="text-[10px] text-slate-600">{s.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Engineer workload ──────────────────────────────────────── */}
+      <div>
+        <h2 className="text-[10px] text-slate-500 uppercase tracking-widest
+          font-semibold mb-3">
+          Engineer Workload
+        </h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {ENGINEERS.filter(e => e.id !== "E5").map(eng => (
+            <EngineerCard
+              key={eng.id}
+              engineer={eng}
+              tickets={allTickets}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* ── Ticket queue table ─────────────────────────────────────── */}
+      <div>
+        <div className="flex items-center gap-3 mb-3 flex-wrap">
+          <h2 className="text-[10px] text-slate-500 uppercase tracking-widest
+            font-semibold">
+            Ticket Queue
+          </h2>
+
+          {/* Search */}
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search tickets…"
+            className="ml-auto text-[11px] px-3 py-1.5 rounded-lg
+              focus:outline-none focus:border-indigo-500 transition-colors"
+            style={{
+              background: "rgba(15,23,42,0.8)",
+              border:     "1px solid rgba(51,65,85,0.5)",
+              color:      "#cbd5e1",
+            }}
+          />
+
+          {/* Sort */}
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+            className="text-[11px] px-2.5 py-1.5 rounded-lg
+              focus:outline-none cursor-pointer"
+            style={{
+              background: "rgba(15,23,42,0.8)",
+              border:     "1px solid rgba(51,65,85,0.5)",
+              color:      "#94a3b8",
+            }}>
+            <option value="priority">Sort: Priority</option>
+            <option value="sentiment">Sort: Sentiment</option>
+          </select>
+
+          {/* Filters */}
+          <div className="flex items-center gap-1.5">
+            {["all", "critical", "escalated", "open"].map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className="text-[10px] px-2.5 py-1 rounded-lg capitalize
+                  transition-colors font-medium"
+                style={{
+                  background: filter === f
+                    ? "rgba(99,102,241,0.2)"
+                    : "rgba(30,41,59,0.5)",
+                  border: filter === f
+                    ? "1px solid rgba(99,102,241,0.4)"
+                    : "1px solid rgba(51,65,85,0.4)",
+                  color: filter === f ? "#a5b4fc" : "#64748b",
+                }}>
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Table */}
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{
+            background: "rgba(15,23,42,0.75)",
+            border:     "1px solid rgba(51,65,85,0.45)",
+          }}>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-slate-800/60">
+                  {["#", "Ticket", "Issue", "Priority", "Status",
+                    "Engineer", "Sentiment", "SLA", ""].map(h => (
+                    <th
+                      key={h}
+                      className="px-4 py-3 text-left text-[10px] text-slate-600
+                        uppercase tracking-wider font-medium whitespace-nowrap">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={9}
+                      className="px-4 py-8 text-center text-slate-600 text-sm">
+                      No tickets match the current filter.
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((ticket, i) => (
+                    <TicketRow
+                      key={ticket.ticket_id}
+                      ticket={ticket}
+                      index={i}
+                    />
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Table footer */}
+          {filtered.length > 0 && (
+            <div
+              className="px-4 py-3 flex items-center justify-between
+                border-t border-slate-800/50">
+              <span className="text-[10px] text-slate-700">
+                Showing {filtered.length} of {allTickets.length} tickets
+              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full
+                  animate-pulse" />
+                <span className="text-[10px] text-emerald-400">Live</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+    </div>
+  );
+}
+// ── Ticket Workspace ───────────────────────────────────────────────────────
+
+function TicketWorkspace({ ticket, onClose, onResolve, onEscalate }) {
+  if (!ticket) return null;
+
+  const engineer  = assignEngineer(ticket.ticket_id);
+  const slaMin    = SLA_MINUTES[ticket.priority] || 240;
+  const sentCfg   = SENTIMENT_CONFIG[ticket.sentiment] || SENTIMENT_CONFIG.neutral;
+
+  const status = ticket.critical   ? "Escalated"
+               : ticket.escalate   ? "In Progress"
+               : "Assigned";
+
+  // Suggested AI resolution based on category
+  const AI_SUGGESTIONS = {
+    workflow: "Verify webhook endpoint returns HTTP 200 within 5s. Check execution log under Workflows > History. Enable retry policy under Error Handling.",
+    billing:  "Review credit consumption at Account > Usage & Credits. Check for looping workflows. Top-up available at Account > Credits.",
+    api:      "Regenerate API key at Settings > Developer > API Keys. Confirm Bearer token format. Verify IP whitelist includes server IP.",
+    access:   "Confirm invitation accepted. Verify role under Settings > Team Management. Check SSO identity provider configuration.",
+  };
+
+  const suggestion = ticket.category
+    ? AI_SUGGESTIONS[ticket.category]
+    : "Route to appropriate specialist team for further investigation.";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-8 px-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" }}>
+
+      <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl"
+        style={{
+          background: "rgba(10,15,30,0.98)",
+          border:     "1px solid rgba(51,65,85,0.6)",
+          boxShadow:  "0 40px 80px rgba(0,0,0,0.7)",
+        }}>
+
+        {/* Workspace header */}
+        <div className="flex items-center justify-between px-6 py-4
+          border-b border-slate-800/60">
+          <div className="flex items-center gap-3">
+            <span className="text-indigo-400 text-sm font-mono font-bold">
+              {ticket.ticket_id}
+            </span>
+            <StatusBadge status={status} />
+            <span className={`text-[10px] px-2 py-0.5 rounded-full
+              ${PRIORITY_BADGE[ticket.priority]}`}>
+              {ticket.priority}
+            </span>
+            {ticket.critical && (
+              <span className="flex items-center gap-1 text-[10px] bg-red-950
+                border border-red-700 text-red-400 px-2 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                CRITICAL
+              </span>
+            )}
+          </div>
+          <button onClick={onClose}
+            className="text-slate-500 hover:text-slate-300 text-xl transition-colors">
+            ✕
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+
+          {/* Customer + Engineer row */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-xl p-4"
+              style={{ background: "rgba(30,41,59,0.5)", border: "1px solid rgba(51,65,85,0.4)" }}>
+              <p className="text-[10px] text-slate-600 uppercase tracking-wider mb-2">
+                Customer
+              </p>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-indigo-950 border border-indigo-800
+                  flex items-center justify-center text-indigo-400 text-xs font-bold">
+                  U
+                </div>
+                <div>
+                  <p className="text-sm text-white font-medium">Enterprise User</p>
+                  <p className="text-[10px] text-slate-600">FlowZint Platform</p>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-1.5">
+                <span className={`w-1.5 h-1.5 rounded-full ${sentCfg.dot}`} />
+                <span className={`text-[11px] ${sentCfg.color}`}>
+                  {sentCfg.label} sentiment
+                </span>
+              </div>
+            </div>
+
+            <div className="rounded-xl p-4"
+              style={{ background: "rgba(30,41,59,0.5)", border: "1px solid rgba(51,65,85,0.4)" }}>
+              <p className="text-[10px] text-slate-600 uppercase tracking-wider mb-2">
+                Assigned Engineer
+              </p>
+              <div className="flex items-center gap-2.5">
+                <EngineerAvatar engineer={engineer} size="lg" />
+                <div>
+                  <p className="text-sm text-white font-medium">{engineer.name}</p>
+                  <p className="text-[10px] text-slate-600">FlowZint Operations</p>
+                </div>
+              </div>
+              <div className="mt-3">
+                <SLATimer createdTime={ticket.time} slaMinutes={slaMin} compact />
+              </div>
+            </div>
+          </div>
+
+          {/* Conversation */}
+          <div>
+            <p className="text-[10px] text-slate-600 uppercase tracking-wider mb-2">
+              Customer Issue
+            </p>
+            <div className="rounded-xl p-4"
+              style={{ background: "rgba(30,41,59,0.5)", border: "1px solid rgba(51,65,85,0.4)" }}>
+              <p className="text-sm text-slate-200 leading-relaxed">{ticket.message}</p>
+              <p className="text-[10px] text-slate-600 mt-2">{ticket.time}</p>
+            </div>
+          </div>
+
+          {/* AI reasoning summary */}
+          <div>
+            <p className="text-[10px] text-slate-600 uppercase tracking-wider mb-2">
+              AI Reasoning Summary
+            </p>
+            <div className="rounded-xl p-4"
+              style={{
+                background:  "rgba(15,23,42,0.8)",
+                border:      "1px solid rgba(99,102,241,0.2)",
+                boxShadow:   "0 0 16px rgba(99,102,241,0.05)",
+              }}>
+              <div className="flex items-start gap-2.5">
+                <span className="text-lg mt-0.5">⚡</span>
+                <div className="space-y-1.5">
+                  <p className="text-[11px] text-slate-400">
+                    <span className="text-indigo-400 font-medium">Intent:</span> support
+                    {ticket.category && (
+                      <> · <span className="text-indigo-400 font-medium">Domain:</span> {ticket.category}</>
+                    )}
+                    {ticket.ragUsed && (
+                      <> · <span className="text-indigo-400 font-medium">RAG:</span> knowledge base used</>
+                    )}
+                    {ticket.multiAgent && (
+                      <> · <span className="text-indigo-400 font-medium">Mode:</span> multi-agent</>
+                    )}
+                  </p>
+                  <p className="text-[11px] text-slate-400">
+                    <span className="text-indigo-400 font-medium">Sentiment:</span> {sentCfg.label}
+                    {" · "}
+                    <span className="text-indigo-400 font-medium">Priority:</span> {ticket.priority}
+                    {" · "}
+                    <span className="text-indigo-400 font-medium">Escalation:</span>{" "}
+                    {ticket.escalate ? "triggered" : "not required"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI suggested resolution */}
+          <div>
+            <p className="text-[10px] text-slate-600 uppercase tracking-wider mb-2">
+              AI Suggested Resolution
+            </p>
+            <div className="rounded-xl p-4"
+              style={{
+                background: "rgba(52,211,153,0.05)",
+                border:     "1px solid rgba(52,211,153,0.2)",
+              }}>
+              <p className="text-[11px] text-emerald-300 leading-relaxed">{suggestion}</p>
+            </div>
+          </div>
+
+          {/* Pipeline mini */}
+          {ticket.pipeline?.length > 0 && (
+            <div>
+              <p className="text-[10px] text-slate-600 uppercase tracking-wider mb-2">
+                AI Pipeline Trace
+              </p>
+              <AIPipelinePanel pipeline={ticket.pipeline} visible />
+            </div>
+          )}
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-3 pt-2 border-t border-slate-800/50">
+            <button
+              onClick={() => { onResolve(ticket.ticket_id); onClose(); }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm
+                font-medium transition-all duration-200"
+              style={{
+                background: "rgba(52,211,153,0.15)",
+                border:     "1px solid rgba(52,211,153,0.35)",
+                color:      "#34d399",
+              }}>
+              ✓ Mark Resolved
+            </button>
+            <button
+              onClick={() => { onEscalate(ticket.ticket_id); onClose(); }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm
+                font-medium transition-all duration-200"
+              style={{
+                background: "rgba(248,113,113,0.12)",
+                border:     "1px solid rgba(248,113,113,0.3)",
+                color:      "#f87171",
+              }}>
+              ⚡ Escalate
+            </button>
+            <button
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm
+                font-medium transition-all duration-200 ml-auto"
+              style={{
+                background: "rgba(51,65,85,0.5)",
+                border:     "1px solid rgba(71,85,105,0.5)",
+                color:      "#94a3b8",
+              }}>
+              ↗ Reassign
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+// ── Admin Operations Landing ───────────────────────────────────────────────
+
+function OperationsDashboard({
+  ticketLog, escalationQueue, trendPoints,
+  onTicketClick, analytics,
+}) {
+  const critical   = ticketLog.filter(t => t.critical).length;
+  const open       = ticketLog.filter(t => !t.critical && t.sentiment !== "positive").length;
+  const resolved   = ticketLog.filter(t => t.sentiment === "positive").length;
+  const aiRate     = ticketLog.length
+    ? Math.round(((ticketLog.length - ticketLog.filter(t => t.escalate).length) / ticketLog.length) * 100)
+    : 0;
+
+  if (ticketLog.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 text-center">
+        <div className="text-5xl mb-4">⚡</div>
+        <h2 className="text-white font-bold text-lg mb-2">
+          Enterprise Operations Center Ready
+        </h2>
+        <p className="text-slate-500 text-sm max-w-xs">
+          No active tickets. The system is monitoring FlowZint's platform.
+          Tickets will appear here as customers submit requests.
+        </p>
+        <div className="flex items-center gap-2 mt-4">
+          <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+          <span className="text-emerald-400 text-xs">All systems operational</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+
+      {/* Critical alert banner */}
+      {critical > 0 && (
+        <div className="rounded-2xl px-5 py-4 flex items-center gap-4"
+          style={{
+            background: "rgba(248,113,113,0.08)",
+            border:     "1px solid rgba(248,113,113,0.3)",
+            boxShadow:  "0 0 24px rgba(248,113,113,0.08)",
+          }}>
+          <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse shrink-0" />
+          <div className="flex-1">
+            <p className="text-red-300 font-semibold text-sm">
+              {critical} critical {critical === 1 ? "incident" : "incidents"} require immediate attention
+            </p>
+            <p className="text-red-400/60 text-xs mt-0.5">
+              Enterprise Operations Team has been notified · SLA clock is running
+            </p>
+          </div>
+          <span className="text-red-400 text-[11px] font-mono">
+            {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        </div>
+      )}
+
+      {/* KPI row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {[
+          { label: "Active Tickets",  value: open,     color: "text-white",       icon: "🎫", sub: "Awaiting resolution" },
+          { label: "Critical",        value: critical, color: "text-red-400",     icon: "🚨", sub: "Immediate action required" },
+          { label: "Queue Waiting",   value: escalationQueue.length, color: escalationQueue.length > 0 ? "text-orange-400" : "text-slate-500", icon: "⚡", sub: "Human agents needed" },
+          { label: "AI Resolution",   value: `${aiRate}%`, color: "text-emerald-400", icon: "✅", sub: `${resolved} auto-resolved` },
+        ].map(s => (
+          <div key={s.label} className="rounded-2xl p-5 flex flex-col gap-2"
+            style={{
+              background: "rgba(15,23,42,0.8)",
+              border:     "1px solid rgba(51,65,85,0.45)",
+            }}>
+            <div className="flex items-start justify-between">
+              <span className="text-[10px] text-slate-600 uppercase tracking-widest">
+                {s.label}
+              </span>
+              <span className="text-lg">{s.icon}</span>
+            </div>
+            <div className={`text-3xl font-bold tabular-nums ${s.color}`}>{s.value}</div>
+            <div className="text-[10px] text-slate-600">{s.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Live ticket feed + queue side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        {/* Recent tickets — clickable */}
+        <div className="rounded-2xl overflow-hidden"
+          style={{
+            background: "rgba(15,23,42,0.75)",
+            border:     "1px solid rgba(51,65,85,0.45)",
+          }}>
+          <div className="flex items-center justify-between px-5 py-3.5
+            border-b border-slate-800/50">
+            <span className="text-white font-semibold text-sm">Live Ticket Feed</span>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+              <span className="text-emerald-400 text-[11px]">Live</span>
+            </div>
+          </div>
+          <div className="max-h-72 overflow-y-auto">
+            {[...ticketLog].reverse().slice(0, 8).map(t => {
+              const sentCfg = SENTIMENT_CONFIG[t.sentiment] || SENTIMENT_CONFIG.neutral;
+              return (
+                <button
+                  key={t.ticket_id}
+                  onClick={() => onTicketClick(t)}
+                  className="w-full text-left flex items-start gap-3 px-5 py-3
+                    border-b border-slate-800/40 last:border-0
+                    hover:bg-white/[0.025] transition-colors">
+                  <span className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${sentCfg.dot}`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <span className="text-[11px] font-mono text-indigo-400">
+                        {t.ticket_id}
+                      </span>
+                      {t.critical && (
+                        <span className="text-[9px] bg-red-900 text-red-300
+                          border border-red-700 px-1.5 py-0.5 rounded font-bold">
+                          CRITICAL
+                        </span>
+                      )}
+                      {t.multiAgent && (
+                        <span className="text-[9px] text-indigo-400">🤝</span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-300 truncate">{t.message}</p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded
+                      ${PRIORITY_BADGE[t.priority]}`}>
+                      {t.priority}
+                    </span>
+                    <p className="text-[9px] text-slate-700 mt-1">{t.time}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Escalation queue */}
+        <div className="rounded-2xl overflow-hidden"
+          style={{
+            background: "rgba(15,23,42,0.75)",
+            border: escalationQueue.length > 0
+              ? "1px solid rgba(248,113,113,0.25)"
+              : "1px solid rgba(51,65,85,0.45)",
+          }}>
+          <div className="flex items-center justify-between px-5 py-3.5
+            border-b border-slate-800/50">
+            <div className="flex items-center gap-2">
+              {escalationQueue.length > 0 && (
+                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              )}
+              <span className="text-white font-semibold text-sm">Human Queue</span>
+              {escalationQueue.length > 0 && (
+                <span className="text-[10px] bg-red-900 text-red-300 border
+                  border-red-700 px-2 py-0.5 rounded-full">
+                  {escalationQueue.length} waiting
+                </span>
+              )}
+            </div>
+          </div>
+          {escalationQueue.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-48 text-center">
+              <div className="text-3xl mb-2">✅</div>
+              <p className="text-slate-500 text-sm">Queue is clear</p>
+            </div>
+          ) : (
+            <div className="max-h-72 overflow-y-auto">
+              {escalationQueue.map((item, i) => (
+                <button
+                  key={item.ticket_id}
+                  onClick={() => onTicketClick(item)}
+                  className="w-full text-left flex items-center gap-3 px-5 py-3
+                    border-b border-slate-800/40 last:border-0
+                    hover:bg-white/[0.025] transition-colors">
+                  <div className="w-7 h-7 rounded-full bg-red-950 border border-red-800
+                    flex items-center justify-center shrink-0">
+                    <span className="text-red-400 font-bold text-xs">#{i+1}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-mono text-indigo-400">{item.ticket_id}</p>
+                    <p className="text-[11px] text-slate-400 truncate">{item.message}</p>
+                  </div>
+                  <span className="text-[10px] text-red-400 shrink-0">
+                    ~{(i+1)*3}m
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* AI health row */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          {
+            label: "AI Health",
+            value: "Operational",
+            color: "#34d399",
+            icon:  "🟢",
+            sub:   "All agents active",
+          },
+          {
+            label: "RAG Hit Rate",
+            value: ticketLog.length
+              ? `${Math.round((ticketLog.filter(t => t.ragUsed).length / ticketLog.length) * 100)}%`
+              : "—",
+            color: "#6366f1",
+            icon:  "📚",
+            sub:   "Knowledge base utilisation",
+          },
+          {
+            label: "Multi-Agent",
+            value: ticketLog.filter(t => t.multiAgent).length,
+            color: "#a5b4fc",
+            icon:  "🤝",
+            sub:   "Collaborative responses",
+          },
+        ].map(s => (
+          <div key={s.label} className="rounded-2xl p-4 flex items-center gap-3"
+            style={{
+              background: "rgba(15,23,42,0.75)",
+              border:     "1px solid rgba(51,65,85,0.4)",
+            }}>
+            <span className="text-xl shrink-0">{s.icon}</span>
+            <div className="min-w-0">
+              <p className="text-[10px] text-slate-600 mb-0.5">{s.label}</p>
+              <p className="text-sm font-bold" style={{ color: s.color }}>{s.value}</p>
+              <p className="text-[10px] text-slate-700 truncate">{s.sub}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+    </div>
+  );
+}
 export default function App() {
 
   const [tab, setTab] = useState("chat");
@@ -2756,6 +4567,18 @@ export default function App() {
                   </span>
                 )}
               </TabBtn>
+               <TabBtn
+           active={tab === "support"}
+          onClick={() => setTab("support")}
+          >
+         👥 Support
+         {escalationQueue.length > 0 && (
+         <span className="ml-1.5 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">
+          {escalationQueue.length}
+         </span>
+          )}
+        </TabBtn>
+
             </>
           )}
         </div>
@@ -2860,6 +4683,12 @@ export default function App() {
       {tab === "dashboard" && (
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
           <SystemStatusPanel />
+          <EnterpriseAnalyticsDashboard
+         ticketLog={ticketLog}
+         summaries={summaries}
+         escalationQueue={escalationQueue}
+         trendPoints={trendPoints}
+         />
           {analytics.total === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center">
               <div className="text-4xl mb-3">📊</div>
@@ -2873,7 +4702,7 @@ export default function App() {
           ) : (
             <>
               <div>
-                <h2 className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-3">Operations Center</h2>
+                <h2 className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-3">Enterprise Operations Center</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                   <StatCard label="Operational Incidents"  value={analytics.total}            sub="This session"           accent="text-white"       icon="🎫" />
                   <StatCard label="Priority Investigations" value={analytics.critical}         sub="Human queue triggered"  accent="text-red-400"     icon="🚨" />
@@ -3019,69 +4848,136 @@ export default function App() {
         </div>
       )}
       {/* ══ QUEUE TAB ════════════════════════════════════════════ */}
-      {tab === "queue" && (
-        <div className="flex-1 overflow-y-auto px-6 py-6">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-            <h2 className="text-white font-bold text-lg">Enterprise Operations Queue</h2>
-            <span className="bg-red-900 text-red-300 border border-red-700 text-xs px-2.5 py-1 rounded-full font-medium">
-              {escalationQueue.length} waiting
-            </span>
-          </div>
-          {escalationQueue.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-center">
-              <div className="text-4xl mb-3">✅</div>
-              <h3 className="text-white font-semibold mb-1">Queue is clear</h3>
-              <p className="text-slate-500 text-sm">No critical cases awaiting human agents.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {escalationQueue.map((item, i) => (
-                <div key={item.ticket_id}
-                  className="bg-slate-900 border border-red-800/60 rounded-2xl p-5 flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-red-950 border border-red-700 flex flex-col items-center justify-center shrink-0">
-                    <span className="text-[10px] text-red-400 uppercase">Pos</span>
-                    <span className="text-red-300 font-bold text-lg leading-none">#{i+1}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span className="text-sm font-mono text-indigo-400 font-semibold">{item.ticket_id}</span>
-                      <span className="text-[11px] bg-red-900 text-red-300 border border-red-700 px-2 py-0.5 rounded-full">CRITICAL</span>
-                      <span className="text-[11px] text-slate-500">{item.agent}</span>
-                    </div>
-                    <p className="text-sm text-slate-300 mb-3 truncate">{item.message}</p>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      {(() => {
-                        const cfg = SENTIMENT_CONFIG[item.sentiment] || SENTIMENT_CONFIG.neutral;
-                        return (
-                          <span className={`flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full border ${cfg.bg} ${cfg.color}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />{cfg.label}
-                          </span>
-                        );
-                      })()}
-                      <span className={`text-[11px] px-2 py-0.5 rounded-full ${PRIORITY_BADGE[item.priority]}`}>
-                        {item.priority}
-                      </span>
-                      <span className="text-[11px] text-slate-600">{item.time}</span>
-                    </div>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <div className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 mb-2">
-                      <div className="text-[10px] text-slate-500 mb-0.5">Est. Wait</div>
-                      <div className="text-white font-bold text-sm">~{(i+1)*3} min</div>
-                    </div>
-                    <div className="flex items-center gap-1.5 justify-end">
-                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                      <span className="text-[10px] text-red-400">Waiting</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+{tab === "queue" && (
+  <div className="flex-1 overflow-y-auto px-6 py-6">
+    <div className="flex items-center gap-3 mb-6">
+      <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+      <h2 className="text-white font-bold text-lg">
+        Enterprise Operations Queue
+      </h2>
 
+      <span className="bg-red-900 text-red-300 border border-red-700 text-xs px-2.5 py-1 rounded-full font-medium">
+        {escalationQueue.length} waiting
+      </span>
     </div>
-  );
+
+    {escalationQueue.length === 0 ? (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <div className="text-4xl mb-3">✅</div>
+        <h3 className="text-white font-semibold mb-1">Queue is clear</h3>
+        <p className="text-slate-500 text-sm">
+          No critical cases awaiting human agents.
+        </p>
+      </div>
+    ) : (
+      <div className="space-y-3">
+        {escalationQueue.map((item, i) => (
+          <div
+            key={item.ticket_id}
+            className="bg-slate-900 border border-red-800/60 rounded-2xl p-5 flex items-start gap-4"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-red-950 border border-red-700 flex flex-col items-center justify-center shrink-0">
+              <span className="text-[10px] text-red-400 uppercase">Pos</span>
+              <span className="text-red-300 font-bold text-lg leading-none">
+                #{i + 1}
+              </span>
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <span className="text-sm font-mono text-indigo-400 font-semibold">
+                  {item.ticket_id}
+                </span>
+
+                <span className="text-[11px] bg-red-900 text-red-300 border border-red-700 px-2 py-0.5 rounded-full">
+                  CRITICAL
+                </span>
+
+                <span className="text-[11px] text-slate-500">
+                  {item.agent}
+                </span>
+              </div>
+
+              <p className="text-sm text-slate-300 mb-3 truncate">
+                {item.message}
+              </p>
+
+              <div className="flex items-center gap-3 flex-wrap">
+                {(() => {
+                  const cfg =
+                    SENTIMENT_CONFIG[item.sentiment] ||
+                    SENTIMENT_CONFIG.neutral;
+
+                  return (
+                    <span
+                      className={`flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full border ${cfg.bg} ${cfg.color}`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`}
+                      />
+                      {cfg.label}
+                    </span>
+                  );
+                })()}
+
+                <span
+                  className={`text-[11px] px-2 py-0.5 rounded-full ${PRIORITY_BADGE[item.priority]}`}
+                >
+                  {item.priority}
+                </span>
+
+                <span className="text-[11px] text-slate-600">
+                  {item.time}
+                </span>
+              </div>
+            </div>
+
+            <div className="shrink-0 text-right">
+              <div className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 mb-2">
+                <div className="text-[10px] text-slate-500 mb-0.5">
+                  Est. Wait
+                </div>
+
+                <div className="text-white font-bold text-sm">
+                  ~{(i + 1) * 3} min
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 justify-end">
+                <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                <span className="text-[10px] text-red-400">
+                  Waiting
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
+{/* ══ SUPPORT TAB ════════════════════════════════════════════ */}
+{tab === "support" && (
+  <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6">
+    <div className="flex items-center gap-3 mb-6">
+      <span className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
+
+      <h2 className="text-white font-bold text-lg">
+        Human Support Operations
+      </h2>
+
+      <span className="bg-slate-800 border border-slate-700 text-slate-400 text-xs px-2.5 py-1 rounded-full">
+        FlowZint Enterprise
+      </span>
+    </div>
+
+    <HumanSupportDashboard
+      ticketLog={ticketLog}
+      escalationQueue={escalationQueue}
+    />
+  </div>
+)}
+
+</div>
+);
 }
