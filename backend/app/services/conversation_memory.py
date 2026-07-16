@@ -138,6 +138,7 @@ class SupportCase:
     escalated:          bool           = False
     archived_issues:    list[dict]     = field(default_factory=list)
     completed_steps: list[str] = field(default_factory=list)
+    ticket_id: Optional[str] = None
 
 
 # ── Conversation memory class ──────────────────────────────────────────────

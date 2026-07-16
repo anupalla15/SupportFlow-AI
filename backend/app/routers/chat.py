@@ -15,8 +15,31 @@ from app.services.conversation_memory import get_memory, reset_memory, cleanup_o
 
 router = APIRouter()
 
-OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "openai/gpt-3.5-turbo"
+# ── Human Support Engineers ─────────────────────────────────────
+
+ENGINEERS = [
+    {
+        "name": "Priya Reddy",
+        "team": "Workflow Automation",
+        "eta": "6 mins",
+    },
+    {
+        "name": "Rohit Sharma",
+        "team": "Platform Reliability",
+        "eta": "8 mins",
+    },
+    {
+        "name": "Ankit Verma",
+        "team": "API Integrations",
+        "eta": "10 mins",
+    },
+    {
+        "name": "Sneha Patel",
+        "team": "Enterprise Operations",
+        "eta": "7 mins",
+    },
+]
+
 # ── Prompts ────────────────────────────────────────────────────────
 BASE_PROMPT = """You are SupportFlow AI — enterprise support intelligence for FlowZint (https://flowzint.in).
 
@@ -129,6 +152,9 @@ class ChatResponse(BaseModel):
     memory_debug: dict = {}
 
     pipeline: list[dict] = []
+
+    human_handoff: bool = False
+    engineer: dict | None = None
     
 
 # ── Endpoint ───────────────────────────────────────────────────────
@@ -158,12 +184,14 @@ async def chat(req: ChatRequest):
     priority = get_priority(sentiment)
     escalate = should_escalate(sentiment)
     critical = is_critical(sentiment)
-
-    ticket_id = generate_ticket_id()
-    queue_position = generate_queue_position() if critical else None
-
-     # 3. Agent routing — memory-aware
+    # 3. Conversation Memory
     memory = get_memory(req.conversation_id)
+    if memory.case.ticket_id:
+      ticket_id = memory.case.ticket_id
+    else:
+     ticket_id = generate_ticket_id()
+    memory.case.ticket_id = ticket_id
+    queue_position = generate_queue_position() if critical else None
     print("=" * 50)
     print("MESSAGE:", req.message)
     print("LOCK:", memory.should_lock_agent(req.message))
@@ -361,10 +389,12 @@ async def chat(req: ChatRequest):
    })
 
 # Memory
+   # Memory
     memory_detail = "No previous context"
+    lock_state = "No Active Case"   # <-- Add this line
 
     if memory.case.issue:
-      lock_state = (
+        lock_state = (
         "Agent Locked"
         if memory.should_lock_agent(req.message)
         else "Topic Active"
@@ -427,11 +457,22 @@ async def chat(req: ChatRequest):
 # Ticket
     pipeline.append({
     "id": "ticket",
-    "label": "Support Ticket",
+    "label": "Incident Record Created",
     "detail": ticket_id,
     "status": "done",
     "ms": 1,
     })
+    # ── Human Handoff Logic ─────────────────────────────────────
+
+    human_handoff = (
+    memory.case.attempts >= 3
+    or critical
+    or escalate
+)
+
+    engineer = ENGINEERS[
+    hash(ticket_id) % len(ENGINEERS)
+]
 
     memory_debug = {
     "issue": memory.case.issue,
@@ -470,15 +511,17 @@ async def chat(req: ChatRequest):
      } if multi_agent else {},
 
         ticket=TicketMeta(
-            ticket_id=ticket_id,
-            sentiment=sentiment,
-            priority=priority,
-            escalate=escalate,
-            critical=critical,
-            queue_position=queue_position,
-        ),
-    )
+    ticket_id=ticket_id,
+    sentiment=sentiment,
+    priority=priority,
+    escalate=escalate,
+    critical=critical,
+    queue_position=queue_position,
+),
 
+human_handoff=human_handoff,
+engineer=engineer if human_handoff else None,
+)
 
 # =====================================================================
 # Conversation Memory Reset Endpoint

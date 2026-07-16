@@ -87,8 +87,8 @@ AGENTS = {
 
         "keywords": [
             "login", "dashboard", "account", "password",
-            "2fa", "otp", "workspace", "organization",
-            "permissions", "locked", "access",
+            "2fa", "otp", 
+            "permissions", "locked",
         ],
       "prompt": (
     "You are SupportFlow AI handling Platform Access for FlowZint "
@@ -158,8 +158,28 @@ AGENTS = {
     },
 }
 print("AGENTS =", AGENTS.keys())
+
 def route_to_multiple_agents(message: str) -> tuple[dict, dict | None]:
     lowered = message.lower()
+
+    # ─────────────────────────────────────────────────────────────
+    # General Information Override
+    # Route company/about questions directly to Enterprise Support
+    # BEFORE keyword scoring.
+    # ─────────────────────────────────────────────────────────────
+    general_queries = [
+        "what is flowzint",
+        "tell me about flowzint",
+        "about flowzint",
+        "flowzint platform",
+        "who are you",
+        "what does flowzint do",
+        "about your company",
+    ]
+
+    if any(q in lowered for q in general_queries):
+        return {**AGENTS["general"], "key": "general"}, None
+
     scores = {}
 
     for key, agent in AGENTS.items():

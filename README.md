@@ -65,7 +65,7 @@ Sentiment Analysis Engine
 ↓  
 Priority Classification  
 ↓  
-AI Response Generation  
+Enterprise Resolution Generated
 ↓  
 Conversation Summary Engine  
 ↓  
