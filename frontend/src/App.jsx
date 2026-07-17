@@ -1890,7 +1890,7 @@ function LoginScreen({ onLogin }) {
               key:     "admin",
               icon:    "⚙",
               title:   "Enterprise Operations Center",
-              desc:    "Monitor AI , Resolve escalations , Manage support tickets",
+              desc:    "Monitor AI • Resolve escalations • Manage support tickets",
               border:  "rgba(251,146,60,0.5)",
               glow:    "rgba(251,146,60,0.12)",
             },
