@@ -318,7 +318,7 @@ Multiple users report the same outage within minutes. Critical Incident Detectio
 </p>
 
 <p align="center">
-  <img src="images/dashboard-final.png" width="90%">
+  <img src="images/dashboard.png" width="90%">
 </p>
 
 ---
