@@ -1597,10 +1597,51 @@ const totalMs   = m.total_ms;
     </div>
   );
 }
+function HumanHandoffCard({ ticketId, engineer, priority }) {
+  if (!engineer) return null;
+
+  return (
+    <div className="mt-3 rounded-xl border border-orange-500 bg-orange-950/20 p-4">
+      <h3 className="text-orange-300 font-bold mb-3">
+        👨‍💼 Human Handoff
+      </h3>
+
+      <div className="space-y-2 text-sm">
+
+        <div>
+          <strong>🎫 Ticket:</strong> {ticketId}
+        </div>
+
+        <div>
+          <strong>👩‍💻 Engineer:</strong> {engineer.name}
+        </div>
+
+        <div>
+          <strong>🏢 Team:</strong> {engineer.team}
+        </div>
+
+        <div>
+          <strong>⚠ Priority:</strong> {priority}
+        </div>
+
+        <div>
+          <strong>⏱ ETA:</strong> {engineer.eta}
+        </div>
+
+        <div className="text-yellow-300 font-semibold">
+          🟡 Waiting for Engineer
+        </div>
+
+      </div>
+    </div>
+  );
+}
 function ChatMessage({ msg }) {
   console.log("CHAT MESSAGE");
   console.log(msg);
   console.log("Pipeline:", msg.pipeline);
+  console.log("HumanHandoff:", msg.humanHandoff);
+  console.log("Engineer:", msg.engineer);
   const isUser = msg.from === "user";
   // Compute once for all child components
 const metrics = !isUser
@@ -1676,7 +1717,6 @@ const metrics = !isUser
   metrics={metrics}
 />
 )}
-
 <div
   className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line
     ${isUser
@@ -1695,13 +1735,24 @@ const metrics = !isUser
       : undefined
   }
 >
- {isUser
-  ? msg.text
-  : <StructuredResponse
+  {isUser ? (
+  msg.text
+) : (
+  <>
+    <StructuredResponse
       text={msg.text}
       streaming={msg.streaming}
     />
-}
+
+    {msg.humanHandoff && (
+      <HumanHandoffCard
+        ticketId={msg.ticketId}
+        engineer={msg.engineer}
+        priority={msg.priority}
+      />
+    )}
+  </>
+)}
 </div>
         {/* RAG Sources Panel — replaces old badge row */}
        {!isUser && msg.ragUsed && msg.sources?.length > 0 && (
@@ -1714,12 +1765,6 @@ const metrics = !isUser
 )}
 
         <span className="text-[10px] text-slate-700 px-1">{msg.time}</span>
-        {!isUser && !msg.streaming && msg.agentInfo?.agent && (
-        <AIDecisionSummary
-  msg={msg}
-  metrics={metrics}
-/>
-         )}
       </div>
     </div>
   );
@@ -5784,6 +5829,11 @@ export default function App() {
       }
 
     const data = await res.json();
+    console.log("FULL RESPONSE");
+    console.log(data);
+console.log("human_handoff =", data.human_handoff);
+console.log("engineer =", data.engineer);
+    console.log(data);
     console.log("FULL DATA", data);
     console.log("PIPELINE", data.pipeline);
     const ticket = data.ticket;
@@ -5833,19 +5883,21 @@ console.log("activeTicket =", activeTicket);
    multiAgent: (data.multi_agent ?? false) || p1Incident !== null,
    ragUsed: data.rag_used ?? false,
    sources: data.sources ?? [],
+   humanHandoff: data.human_handoff ?? false,
+   engineer: data.engineer ?? null,
    pipeline: data.pipeline ?? [],
    model: data.model ?? null,
    memoryActive: !!(data.memory_debug?.issue),
    ticketId: activeTicket.ticket_id,
    priority: activeTicket.priority,
    p1Incident,
-   humanHandoff,
-   engineer: assignedEngineer,
    };
 console.log("========== BOT MESSAGE ==========");
 console.log(botMsg);
-console.log("Human handoff:", humanHandoff);
-console.log("Assigned engineer:", assignedEngineer);
+console.log("BOT MESSAGE");
+console.log(botMsg);
+console.log("botMsg.humanHandoff =", botMsg.humanHandoff);
+console.log("botMsg.engineer =", botMsg.engineer);
 console.log("=================================");
 
       let newMsgs = [...updated];

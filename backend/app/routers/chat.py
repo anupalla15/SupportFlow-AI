@@ -314,8 +314,6 @@ async def chat(req: ChatRequest):
         "content": user_content,
     }
 )
-
-     # 7. LLM Call
     try:
         print("=" * 60)
         print("MEMORY PROMPT")
@@ -334,6 +332,15 @@ async def chat(req: ChatRequest):
         if critical:
             memory.mark_escalated()
 
+        # Human handoff decision
+        attempts = memory.case.attempts
+
+        human_handoff = (
+            attempts >= 3
+            or critical
+            or escalate
+        )
+
         print("=" * 60)
         print("MODEL:", model_used)
         print("REPLY:", repr(reply))
@@ -346,12 +353,14 @@ async def chat(req: ChatRequest):
             detail=f"LLM error: {str(e)}"
         )
 
-    # 8. Summary
+    # ==========================================================
+    # Summary
+    # ==========================================================
 
     full_convo = [
         {
             "role": m.role,
-            "content": m.content
+            "content": m.content,
         }
         for m in req.history
     ]
@@ -360,130 +369,142 @@ async def chat(req: ChatRequest):
         [
             {
                 "role": "user",
-                "content": req.message
+                "content": req.message,
             },
             {
                 "role": "assistant",
-                "content": reply
-            }
+                "content": reply,
+            },
         ]
     )
 
     summary = generate_summary(
         full_convo,
-        ticket_id
+        ticket_id,
     )
-    # ─────────────────────────────────────────────────────────────
-# AI Processing Pipeline
-# ─────────────────────────────────────────────────────────────
+
+    # ==========================================================
+    # Pipeline
+    # ==========================================================
 
     pipeline = []
 
-# Intent
-    pipeline.append({
-    "id": "intent",
-    "label": "Intent Classified",
-    "detail": intent,
-    "status": "done",
-    "ms": 4,
-   })
+    pipeline.append(
+        {
+            "id": "intent",
+            "label": "Intent Classified",
+            "detail": intent,
+            "status": "done",
+            "ms": 4,
+        }
+    )
 
-# Memory
-   # Memory
     memory_detail = "No previous context"
-    lock_state = "No Active Case"   # <-- Add this line
+    lock_state = "No Active Case"
 
     if memory.case.issue:
         lock_state = (
-        "Agent Locked"
-        if memory.should_lock_agent(req.message)
-        else "Topic Active"
+            "Agent Locked"
+            if memory.should_lock_agent(req.message)
+            else "Topic Active"
+        )
+
+    memory_detail = f"{lock_state} • Attempt {memory.case.attempts}"
+
+    pipeline.append(
+        {
+            "id": "memory",
+            "label": "Conversation Memory",
+            "detail": memory_detail,
+            "status": "done",
+            "ms": 2,
+        }
     )
 
-    memory_detail = (
-        f"{lock_state} • Attempt {memory.case.attempts}"
-    )
-
-    pipeline.append({
-    "id": "memory",
-    "label": "Conversation Memory",
-    "detail": memory_detail,
-    "status": "done",
-    "ms": 2,
-    })
-
-# Agent Routing
     routing_detail = primary["agent"]
 
     if multi_agent:
-      routing_detail += f" + {secondary['agent']}"
+        routing_detail += f" + {secondary['agent']}"
 
-    pipeline.append({
-    "id": "routing",
-    "label": "Agent Routing",
-    "detail": routing_detail,
-    "status": "done",
-    "ms": 6,
-    })
+    pipeline.append(
+        {
+            "id": "routing",
+            "label": "Agent Routing",
+            "detail": routing_detail,
+            "status": "done",
+            "ms": 6,
+        }
+    )
 
-# Knowledge Retrieval
-    pipeline.append({
-    "id": "rag",
-    "label": "Knowledge Retrieval",
-    "detail": "Company Knowledge Used" if rag_used else "No Company Context",
-    "status": "done" if rag_used else "skipped",
-    "ms": 12 if rag_used else 0,
-    })
+    pipeline.append(
+        {
+            "id": "rag",
+            "label": "Knowledge Retrieval",
+            "detail": (
+                "Company Knowledge Used"
+                if rag_used
+                else "No Company Context"
+            ),
+            "status": "done" if rag_used else "skipped",
+            "ms": 12 if rag_used else 0,
+        }
+    )
 
-# LLM
-    pipeline.append({
-    "id": "llm",
-    "label": "LLM Response",
-    "detail": model_used,
-    "status": "done",
-    "ms": 0,
-   })
+    pipeline.append(
+        {
+            "id": "llm",
+            "label": "LLM Response",
+            "detail": model_used,
+            "status": "done",
+            "ms": 0,
+        }
+    )
 
-# Escalation
     if critical:
-     pipeline.append({
-        "id": "escalation",
-        "label": "Escalation",
-        "detail": f"Queue #{queue_position}",
-        "status": "done",
-        "ms": 1,
-    })
+        pipeline.append(
+            {
+                "id": "escalation",
+                "label": "Escalation",
+                "detail": f"Queue #{queue_position}",
+                "status": "done",
+                "ms": 1,
+            }
+        )
 
-# Ticket
-    pipeline.append({
-    "id": "ticket",
-    "label": "Incident Record Created",
-    "detail": ticket_id,
-    "status": "done",
-    "ms": 1,
-    })
-    # ── Human Handoff Logic ─────────────────────────────────────
+    pipeline.append(
+        {
+            "id": "ticket",
+            "label": "Incident Record Created",
+            "detail": ticket_id,
+            "status": "done",
+            "ms": 1,
+        }
+    )
 
-    human_handoff = (
-    memory.case.attempts >= 3
-    or critical
-    or escalate
-)
+    # ==========================================================
+    # Engineer Assignment
+    # ==========================================================
 
     engineer = ENGINEERS[
-    hash(ticket_id) % len(ENGINEERS)
-]
+        hash(ticket_id) % len(ENGINEERS)
+    ]
 
     memory_debug = {
-    "issue": memory.case.issue,
-    "category": memory.case.category,
-    "status": memory.case.resolution_status,
-    "attempts": memory.case.attempts,
-    "error_codes": memory.case.error_codes,
-    "escalated": memory.case.escalated,
+        "issue": memory.case.issue,
+        "category": memory.case.category,
+        "status": memory.case.resolution_status,
+        "attempts": memory.case.attempts,
+        "error_codes": memory.case.error_codes,
+        "escalated": memory.case.escalated,
     }
 
-    # 9. Response
+    print("HUMAN HANDOFF =", human_handoff)
+    print("ENGINEER =", engineer)
+
+    # ==========================================================
+    # Response
+    # ==========================================================
+
     return ChatResponse(
         reply=reply,
         model=model_used,
@@ -493,6 +514,8 @@ async def chat(req: ChatRequest):
         multi_agent=multi_agent,
         pipeline=pipeline,
         memory_debug=memory_debug,
+        human_handoff=human_handoff,
+        engineer=engineer if human_handoff else None,
 
         agent_info={
             "agent": primary["agent"],
@@ -503,25 +526,22 @@ async def chat(req: ChatRequest):
         },
 
         agent_info_2={
-           "agent": secondary["agent"],
-           "department": secondary["department"],
-           "emoji": secondary["emoji"],
-           "color": secondary["color"],
-         "confidence": secondary.get("confidence", 0.78),
-     } if multi_agent else {},
+            "agent": secondary["agent"],
+            "department": secondary["department"],
+            "emoji": secondary["emoji"],
+            "color": secondary["color"],
+            "confidence": secondary.get("confidence", 0.78),
+        } if multi_agent else {},
 
         ticket=TicketMeta(
-    ticket_id=ticket_id,
-    sentiment=sentiment,
-    priority=priority,
-    escalate=escalate,
-    critical=critical,
-    queue_position=queue_position,
-),
-
-human_handoff=human_handoff,
-engineer=engineer if human_handoff else None,
-)
+            ticket_id=ticket_id,
+            sentiment=sentiment,
+            priority=priority,
+            escalate=escalate,
+            critical=critical,
+            queue_position=queue_position,
+        ),
+    )
 
 # =====================================================================
 # Conversation Memory Reset Endpoint
