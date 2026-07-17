@@ -143,10 +143,7 @@ Converts resolved or escalated conversations into structured tickets, detects cr
 **Dashboard Layer**
 The operational control tower: AI decision summaries, the processing pipeline trace, execution timelines, the ticket queue, human support operations, and engineer workload — all in one real-time view.
 
-<p align="center">
-  <img src="images/architecture.svg" width="95%">
-</p>
-
+![SupportFlow AI Architecture](./images/architecture.png)
 ---
 
 ## 🔄 Complete AI Workflow
@@ -269,7 +266,7 @@ This turns the AI from a black box into an auditable system that support leads c
 The Enterprise Dashboard is the operational control center for the entire platform. It brings together AI decision summaries, the processing pipeline, execution timelines, the ticket queue, human support operations, and engineer workload into a single live view.
 
 <p align="center">
-  <img src="images/dashboard.png" width="95%">
+  <img src="images/dashboard.png" width="90%">
 </p>
 
 ---
