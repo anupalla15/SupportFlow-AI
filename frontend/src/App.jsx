@@ -673,7 +673,7 @@ function DSSection({ title, badge, action, children }) {
 // END OF DESIGN SYSTEM
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-const API_URL = "http://127.0.0.1:8000/api/chat/";
+const API_URL = "https://supportflow-ai-1hof.onrender.com/api/chat/";
 
 // ── Config ─────────────────────────────────────────────────────────────────
 
