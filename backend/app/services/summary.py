@@ -4,6 +4,7 @@ from app.config import OPENROUTER_API_KEY
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 MODEL = "openai/gpt-3.5-turbo"
 
+
 SUMMARY_PROMPT = """You are a support operations analyst.
 Analyze this customer support conversation and return a JSON summary.
 

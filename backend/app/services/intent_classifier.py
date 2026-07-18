@@ -37,7 +37,7 @@ SUPPORT_SIGNALS = {
     "401", "403", "404", "500", "502", "503",
 
     # English platform
-    "workflow", "automation", "trigger", "pipeline", "webhook", "api",
+    "workflow", "trigger", "pipeline", "webhook", "api",
     "integration", "endpoint", "credential", "token", "sso", "oauth",
     "billing", "invoice", "credit", "subscription", "payment", "plan",
     "login", "dashboard", "access", "permission", "role", "otp",

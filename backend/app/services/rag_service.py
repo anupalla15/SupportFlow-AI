@@ -34,52 +34,71 @@ FAQ_SECTIONS = _load_faq()
 
 # Keyword → section mapping (add more as your FAQ grows)
 TOPIC_KEYWORDS: dict[str, list[str]] = {
-    "ABOUT_FLOWZINT": [
-        "flowzint", "about", "company", "who are you", "what is flowzint",
-        "contact", "phone", "email", "website", "services offered",
+   "ABOUT_FLOWZINT": [
+    "what is flowzint", "who is flowzint", "about flowzint",
+    "flowzint company", "flowzint founded", "flowzint vision",
+    "flowzint mission", "billion dollar", "flowzint technology",
+    ],
+    "CONTACT": [
+        "contact", "email", "phone", "reach", "support team",
+        "helpdesk", "get in touch", "how to contact", "reach out",
+        "message", "call", "enquiry",
+    ],
+    "FLOWZINT_AI": [
+        "flowzint ai", "upcoming ai", "ai platform", "ai launch",
+        "get notified", "ai product", "new ai", "ai release",
+        "autonomous digital", "ai announcement",
     ],
     "SERVICES": [
-        "services", "saas", "mobile", "web", "enterprise system",
-        "ai automation", "what do you offer", "what does flowzint do",
-        "digital transformation", "software development",
+        "services", "what do you offer", "what does flowzint build",
+        "offerings", "solutions", "what can flowzint do",
+        "service verticals", "all services",
     ],
-    "WORKFLOW": [
-        "workflow", "automation", "trigger", "action", "flow", "pipeline",
-        "task", "scheduled", "cron", "execution", "failed", "not running",
-        "stuck", "delay", "webhook", "automate", "not triggering",
-        "workflow error", "execution failed", "avvatledu", "run avvatledu",
+    "WEB_INFRASTRUCTURE": [
+        "web infrastructure", "web platform", "web development",
+        "website", "web system", "web app", "frontend", "backend",
+        "web hosting", "web architecture", "load balancing",
     ],
-    "BILLING": [
-        "billing", "invoice", "subscription", "plan", "upgrade", "downgrade",
-        "payment", "charge", "credit", "ai credits", "credits", "quota",
-        "limit", "renew", "renewal", "refund", "receipt", "overage",
-        "usage", "balance", "tier", "pricing", "upi", "razorpay",
-        "credit teerindi", "payment fail ayyindi",
+    "MOBILE_PLATFORMS": [
+        "mobile", "ios", "android", "mobile app", "mobile platform",
+        "mobile development", "cross platform", "app development",
     ],
-    "ACCESS": [
-        "login", "access", "dashboard", "account", "password", "sign in",
-        "locked", "otp", "2fa", "two factor", "sso", "permissions",
-        "role", "team", "member", "invite", "user management", "admin",
-        "cannot access", "session", "logout", "profile", "settings",
-        "workspace", "organization", "onboarding", "setup",
-        "login avvatledu", "login nahi ho raha", "otp raledu",
+    "SAAS_SYSTEMS": [
+        "saas", "subscription", "cloud", "multi tenant", "saas platform",
+        "cloud system", "software as a service", "saas product",
+        "saas architecture", "cloud infrastructure",
     ],
-    "API": [
-        "api", "api key", "endpoint", "rest", "sdk", "integration",
-        "connect", "oauth", "token", "rate limit", "401", "403", "500",
-        "request", "response", "payload", "header", "authentication",
-        "webhook", "callback", "timeout", "connection refused",
-        "api work avvatledu", "api nahi chal raha",
+    "AI_AUTOMATION": [
+    "ai automation", "workflow automation", "workflow execution",
+    "task automation", "intelligent automation", "automated task",
+    "workflow failed", "execution failed", "not triggering",
+    "avvatledu", "run avvatledu", "automation platform",
+     ],
+    "ENTERPRISE_SYSTEMS": [
+        "enterprise", "enterprise system", "erp", "crm", "enterprise software",
+        "large scale", "enterprise platform", "organizational", "enterprise grade",
+        "business system", "enterprise infrastructure",
     ],
-    "ONBOARDING": [
-        "onboarding", "setup", "getting started", "first time", "new account",
-        "tutorial", "guide", "template", "integration template", "free trial",
-        "help center", "documentation", "wizard",
+    "DIGITAL_TRANSFORMATION": [
+        "digital transformation", "modernize", "transform", "modernization",
+        "digital strategy", "business transformation", "digital evolution",
     ],
-    "SUPPORT_SLA": [
-        "sla", "response time", "support hours", "how long", "when will",
-        "emergency", "maintenance", "uptime", "99.9", "priority support",
-        "enterprise support", "support plan",
+    "BUSINESS_AUTOMATION": [
+        "business automation", "process automation", "workflow optimization",
+        "automate business", "operational automation", "reduce manual",
+    ],
+    "CAREERS_INTERNSHIPS": [
+        "career", "job", "hiring", "internship", "work at flowzint",
+        "join flowzint", "opportunities", "recruitment", "apply",
+    ],
+    "INNOVATION": [
+        "innovation", "future", "roadmap", "new features", "upcoming",
+        "technology direction", "what is flowzint building",
+    ],
+    "SUPPORT_CHANNELS": [
+        "help", "support", "assistance", "escalate", "human agent",
+        "contact support", "reach support", "need help", "urgent",
+        "helpdesk", "support team",
     ],
 }
 
@@ -95,7 +114,10 @@ def get_relevant_context(user_message: str, max_sections: int = 2) -> str:
     scores: dict[str, int] = {}
 
     for topic, keywords in TOPIC_KEYWORDS.items():
-        score = sum(1 for kw in keywords if kw in lowered)
+        score = sum(
+    1 for kw in keywords
+    if re.search(r'\b' + re.escape(kw) + r'\b', lowered)
+    )
         if score > 0:
             scores[topic] = score
 
